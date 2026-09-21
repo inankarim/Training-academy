@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment secrets
+.env
+.env.local
+.env.*.local
+
+# Runtime data (uploaded files, logs) — not source, and may contain user-submitted PII
+backend/uploads/
+backend/logs/
+*.log
+
+# Coverage / test output
+coverage/
+
+# OS / editor cruft
+.DS_Store
+.vscode/
+.idea/
