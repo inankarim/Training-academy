@@ -22,3 +22,6 @@ coverage/
 .DS_Store
 .vscode/
 .idea/
+
+# Local dev-tool state (Kilo Code extension) — not part of the project
+.kilo/
