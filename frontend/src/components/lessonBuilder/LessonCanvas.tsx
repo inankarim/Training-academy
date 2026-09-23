@@ -9,7 +9,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, ChevronDown, ChevronUp, Trash2, Plus } from 'lucide-react';
+import { GripVertical, ChevronDown, ChevronUp, Trash2, Plus, Lock, LockOpen } from 'lucide-react';
 import clsx from 'clsx';
 import { LessonBlock, BlockTypeMeta } from '../../types/courseBuilder.types';
 import { BLOCK_EDITOR_MAP } from './BlockEditors';
@@ -26,6 +26,7 @@ function SortableBlockRow({
   onToggleExpand,
   onDelete,
   onContentChange,
+  onToggleLock,
 }: {
   block: LessonBlock;
   index: number;
@@ -34,9 +35,13 @@ function SortableBlockRow({
   onToggleExpand: () => void;
   onDelete: () => void;
   onContentChange: (content: Record<string, unknown>) => void;
+  onToggleLock: (locked: boolean) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
   const Editor = BLOCK_EDITOR_MAP[block.type];
+  const isLocked = Boolean(block.style.lockUntilPrevious);
+  // The first block has no "previous" block to gate on, so it can't be locked.
+  const canLock = index > 0;
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -57,6 +62,19 @@ function SortableBlockRow({
           <span className="text-xs font-semibold text-ink">{label}</span>
           {expanded ? <ChevronUp className="h-4 w-4 text-ink-faint" /> : <ChevronDown className="h-4 w-4 text-ink-faint" />}
         </button>
+        {canLock && (
+          <button
+            onClick={() => onToggleLock(!isLocked)}
+            className={
+              isLocked
+                ? 'flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-semibold text-accent'
+                : 'flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-semibold text-ink-faint hover:text-ink-muted'
+            }
+            title={isLocked ? 'Hidden until the previous block is marked complete' : 'Always visible'}
+          >
+            {isLocked ? <Lock className="h-3.5 w-3.5" /> : <LockOpen className="h-3.5 w-3.5" />}
+          </button>
+        )}
         <button onClick={onDelete} className="text-ink-faint hover:text-status-danger" title="Delete block">
           <Trash2 className="h-3.5 w-3.5" />
         </button>
@@ -64,6 +82,11 @@ function SortableBlockRow({
       {expanded && Editor && (
         <div className="border-t border-surface-border p-4">
           <Editor content={block.content} onChange={onContentChange} />
+        </div>
+      )}
+      {canLock && isLocked && (
+        <div className="border-t border-surface-border bg-accent/5 px-3 py-1.5 text-[10px] font-medium text-accent">
+          Hidden from learners until they mark block {index} complete
         </div>
       )}
     </div>
@@ -78,6 +101,7 @@ interface LessonCanvasProps {
   onReorder: (blockIds: string[]) => void;
   onDelete: (id: string) => void;
   onContentChange: (id: string, content: Record<string, unknown>) => void;
+  onToggleLock: (id: string, locked: boolean) => void;
   onOpenLibrary: () => void;
 }
 
@@ -89,6 +113,7 @@ export const LessonCanvas: React.FC<LessonCanvasProps> = ({
   onReorder,
   onDelete,
   onContentChange,
+  onToggleLock,
   onOpenLibrary,
 }) => {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
@@ -136,6 +161,7 @@ export const LessonCanvas: React.FC<LessonCanvasProps> = ({
               onToggleExpand={() => onToggleExpand(block.id)}
               onDelete={() => onDelete(block.id)}
               onContentChange={(content) => onContentChange(block.id, content)}
+              onToggleLock={(locked) => onToggleLock(block.id, locked)}
             />
           ))}
         </SortableContext>

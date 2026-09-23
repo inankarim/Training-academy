@@ -23,6 +23,7 @@ export interface UploadedMedia {
   fileName: string;
   mimeType: string;
   size: number;
+  sizeKB: number;
 }
 
 export async function uploadMediaApi(file: File): Promise<UploadedMedia> {

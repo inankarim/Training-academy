@@ -1,6 +1,7 @@
 import React from 'react';
 import { Play, FileText, HelpCircle, ArrowRight, Image as ImageIcon } from 'lucide-react';
 import { LessonBlock } from '../../types/courseBuilder.types';
+import { renderFormattedText } from '../../utils/richTextFormat';
 
 function PreviewImage({ url, className }: { url?: string; className: string }) {
   if (!url) {
@@ -21,7 +22,10 @@ function renderBlock(block: LessonBlock): React.ReactNode {
       const bannerImage = (c.bannerImage as { url?: string }) ?? {};
       return (
         <div className="overflow-hidden rounded-lg bg-charcoal">
-          <PreviewImage url={bannerImage.url} className="h-24 w-full rounded-none" />
+          {/* aspect-[3/1] matches the real Lesson Player's hero box exactly —
+              a fixed height here (e.g. h-24) would crop this narrow phone
+              mockup harder than the real full-width page for the same image. */}
+          <PreviewImage url={bannerImage.url} className="aspect-[3/1] w-full rounded-none" />
           <div className="bg-white p-2.5">
             <p className="text-[9px] font-bold uppercase tracking-wider text-accent">{String(c.moduleTitle ?? 'Module')}</p>
             <p className="text-xs font-bold text-ink">{String(c.lessonTitle ?? 'Lesson title')}</p>
@@ -43,14 +47,18 @@ function renderBlock(block: LessonBlock): React.ReactNode {
       const images = (c.images as { url: string }[]) ?? [];
       return (
         <div className="grid grid-cols-2 gap-1.5">
+          {/* aspect-video matches the real page's IMAGES grid tiles (16:9) —
+              this used to be aspect-square, a different ratio than what
+              learners actually see, so the preview lied about the crop. */}
           {(images.length ? images : [{ url: '' }]).slice(0, 4).map((img, i) => (
-            <PreviewImage key={i} url={img.url} className="aspect-square rounded" />
+            <PreviewImage key={i} url={img.url} className="aspect-video rounded" />
           ))}
         </div>
       );
     }
     case 'BANNER_IMAGE':
-      return <PreviewImage url={c.imageUrl ? String(c.imageUrl) : undefined} className="h-16 w-full rounded-lg" />;
+      // aspect-[4/1] matches the real Lesson Player's Banner Image box.
+      return <PreviewImage url={c.imageUrl ? String(c.imageUrl) : undefined} className="aspect-[4/1] w-full rounded-lg" />;
     case 'PDF':
       return (
         <div className="flex items-center gap-2 rounded-lg border border-surface-border bg-surface p-2.5">
@@ -59,23 +67,36 @@ function renderBlock(block: LessonBlock): React.ReactNode {
         </div>
       );
     case 'RICH_TEXT':
-      return <p className="text-[11px] leading-relaxed text-ink-muted">{String(c.html ?? 'Rich text content...')}</p>;
+      return (
+        <p className="whitespace-pre-line text-[11px] leading-relaxed text-ink-muted">
+          {renderFormattedText(String(c.html ?? 'Rich text content...'))}
+        </p>
+      );
     case 'CALLOUT':
       return (
         <div className="rounded-lg border border-accent/30 bg-accent/5 p-2.5">
           <p className="text-[11px] font-bold text-accent">{String(c.title ?? 'Key Point')}</p>
-          <p className="mt-0.5 text-[10px] text-ink-muted">{String(c.message ?? '')}</p>
+          <p className="mt-0.5 whitespace-pre-line text-[10px] text-ink-muted">
+            {renderFormattedText(String(c.message ?? ''))}
+          </p>
         </div>
       );
     case 'IMAGE_TEXT': {
       const image = (c.image as { url?: string }) ?? {};
-      const position = c.imagePosition === 'right' ? 'right' : 'left';
       return (
-        <div className={`flex gap-2.5 ${position === 'right' ? 'flex-row-reverse' : ''}`}>
-          <PreviewImage url={image.url} className="h-12 w-12 shrink-0 rounded" />
+        // This mockup IS the mobile view, so it always stacks (image on top,
+        // text below) regardless of the left/right setting — that setting
+        // only means something once there's a side-by-side row to place it
+        // in, which is the real page's desktop layout, not this preview.
+        <div className="space-y-2 rounded-lg border border-surface-border bg-surface p-2 shadow-sm">
+          <PreviewImage url={image.url} className="aspect-video w-full rounded" />
           <div className="min-w-0">
-            <p className="truncate text-[11px] font-bold text-ink">{String(c.title ?? 'Title')}</p>
-            <p className="truncate text-[10px] text-ink-muted">{String(c.description ?? '')}</p>
+            <p className="line-clamp-2 text-[11px] font-bold text-ink">{String(c.title ?? 'Title')}</p>
+            {/* No clamp — the phone mockup's own container scrolls
+                (overflow-y-auto below), so nothing needs to be hidden here. */}
+            <p className="whitespace-pre-line text-[10px] text-ink-muted">
+              {renderFormattedText(String(c.description ?? ''))}
+            </p>
           </div>
         </div>
       );

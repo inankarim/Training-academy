@@ -7,6 +7,7 @@ interface FileUploadFieldProps {
   kind: 'image' | 'video' | 'file';
   currentUrl?: string;
   currentFileName?: string;
+  currentSizeKB?: number;
   placeholder: string;
   helperText?: string;
   onUploaded: (result: UploadedMedia) => void;
@@ -18,6 +19,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
   kind,
   currentUrl,
   currentFileName,
+  currentSizeKB,
   placeholder,
   helperText,
   onUploaded,
@@ -27,6 +29,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [lastSizeKB, setLastSizeKB] = useState<number | undefined>(currentSizeKB);
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return;
@@ -34,6 +37,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
     setUploading(true);
     try {
       const result = await uploadMediaApi(file);
+      setLastSizeKB(result.sizeKB);
       onUploaded(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
@@ -55,7 +59,21 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
               <FileText className="h-4 w-4" />
             </span>
           )}
-          <span className="min-w-0 flex-1 truncate text-[11px] font-medium text-ink">{currentFileName || currentUrl}</span>
+          <span className="min-w-0 flex-1 truncate text-[11px] font-medium text-ink">
+            {kind === 'image' ? (
+              // Images are content-creator-facing only — the server URL/path
+              // is internal plumbing, not something they need to see. Show
+              // just what they'd care about: it uploaded, and how big it is.
+              <>
+                Image uploaded
+                {lastSizeKB !== undefined && (
+                  <span className="ml-1.5 font-normal text-ink-faint">&middot; WebP &middot; {lastSizeKB} KB</span>
+                )}
+              </>
+            ) : (
+              currentFileName || currentUrl
+            )}
+          </span>
           <button
             onClick={() => inputRef.current?.click()}
             className="shrink-0 rounded border border-surface-border px-2 py-1 text-[10px] font-semibold text-ink-muted hover:border-accent hover:text-accent"

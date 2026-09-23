@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -9,6 +9,7 @@ import {
   getLearnerDashboardApi,
 } from '../../services/learner.service';
 import { LearnerBlock, LearnerCourseDetail } from '../../types/learner.types';
+import { renderFormattedText } from '../../utils/richTextFormat';
 import {
   ChevronLeft,
   CheckCircle2,
@@ -25,8 +26,15 @@ import {
   Clock,
   Zap,
   BookOpen,
+  Lock,
 } from 'lucide-react';
 import clsx from 'clsx';
+
+// Block types that aren't standalone learner-facing content — HERO_BANNER
+// folds into the page header, NEXT_LESSON is the page's own Continue button,
+// and KNOWLEDGE_CHECK/QUIZ complete automatically when passed rather than
+// via a manual button.
+const NO_MANUAL_COMPLETE = new Set(['HERO_BANNER', 'NEXT_LESSON', 'KNOWLEDGE_CHECK', 'QUIZ']);
 
 interface KnowledgeCheckQuestion {
   id: string;
@@ -57,10 +65,11 @@ function lessonXpPotential(blocks: LearnerBlock[]): number {
     }, 0);
 }
 
-const QuizBlock: React.FC<{ lessonId: string; block: LearnerBlock; label: string }> = ({
+const QuizBlock: React.FC<{ lessonId: string; block: LearnerBlock; label: string; onPassed: () => void }> = ({
   lessonId,
   block,
   label,
+  onPassed,
 }) => {
   const content = block.content as { questions?: KnowledgeCheckQuestion[] };
   const questions = content.questions ?? [];
@@ -78,6 +87,7 @@ const QuizBlock: React.FC<{ lessonId: string; block: LearnerBlock; label: string
     onSuccess: (res) => {
       setResult(res);
       setError(null);
+      if (res.passed) onPassed();
     },
     onError: (err: unknown) => {
       setError(err instanceof Error ? err.message : 'Failed to submit answers');
@@ -86,6 +96,14 @@ const QuizBlock: React.FC<{ lessonId: string; block: LearnerBlock; label: string
 
   const allAnswered = questions.length > 0 && questions.every((q) => Boolean(answers[q.id]));
   const correctCount = result?.perQuestion.filter((p) => p.correct).length ?? 0;
+
+  // An unconfigured check (no questions yet) has nothing to answer — treat it
+  // as already satisfied so it can never permanently block the unlock chain
+  // or the lesson-level "all blocks done" gate below.
+  useEffect(() => {
+    if (questions.length === 0) onPassed();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (questions.length === 0) {
     return (
@@ -195,7 +213,7 @@ const QuizBlock: React.FC<{ lessonId: string; block: LearnerBlock; label: string
   );
 };
 
-function renderBlock(lessonId: string, block: LearnerBlock): React.ReactNode {
+function renderBlock(lessonId: string, block: LearnerBlock, onQuizPassed: () => void): React.ReactNode {
   const c = block.content as Record<string, unknown>;
 
   switch (block.type) {
@@ -233,10 +251,13 @@ function renderBlock(lessonId: string, block: LearnerBlock): React.ReactNode {
       );
     }
     case 'BANNER_IMAGE':
+      // Fixed aspect ratio (not a fixed height) so the crop stays the same
+      // 4:1 regardless of viewport width — a fixed height with fluid width
+      // makes narrower screens crop harder than wide ones for the same image.
       return (
         <BlockImage
           url={c.imageUrl ? String(c.imageUrl) : undefined}
-          className="h-48 w-full rounded-xl border border-surface-border shadow-card"
+          className="aspect-[4/1] w-full rounded-xl border border-surface-border shadow-card"
         />
       );
     case 'PDF':
@@ -256,38 +277,51 @@ function renderBlock(lessonId: string, block: LearnerBlock): React.ReactNode {
     case 'RICH_TEXT':
       return (
         <div className="rounded-xl border border-surface-border bg-white p-5 shadow-card">
-          <p className="whitespace-pre-line text-sm leading-relaxed text-ink-muted">{String(c.html ?? '')}</p>
+          <p className="whitespace-pre-line text-sm leading-relaxed text-ink-muted">
+            {renderFormattedText(String(c.html ?? ''))}
+          </p>
         </div>
       );
     case 'CALLOUT':
       return (
         <div className="rounded-xl border-l-4 border-accent bg-accent/5 p-4 shadow-card">
           <p className="text-sm font-bold text-ink">{String(c.title ?? '')}</p>
-          <p className="mt-1 text-xs leading-relaxed text-ink-muted">{String(c.message ?? '')}</p>
+          <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-ink-muted">
+            {renderFormattedText(String(c.message ?? ''))}
+          </p>
         </div>
       );
     case 'IMAGE_TEXT': {
       const image = (c.image as { url?: string }) ?? {};
       const position = c.imagePosition === 'right' ? 'right' : 'left';
       return (
+        // Mobile-first: stacked (image on top, text below) by default —
+        // stretching a small image to match a long block of text looked
+        // broken on narrow screens. At sm: (640px+) it switches to a real
+        // side-by-side card with a fixed-size thumbnail, honoring left/right.
         <div
           className={clsx(
-            'flex gap-4 rounded-xl border border-surface-border bg-white p-4 shadow-card',
-            position === 'right' && 'flex-row-reverse',
+            'flex flex-col gap-4 rounded-xl border border-surface-border bg-white p-4 shadow-card sm:flex-row',
+            position === 'right' && 'sm:flex-row-reverse',
           )}
         >
-          <BlockImage url={image.url} className="h-24 w-24 shrink-0 rounded-lg" />
+          <BlockImage
+            url={image.url}
+            className="aspect-video w-full shrink-0 rounded-lg sm:aspect-square sm:h-32 sm:w-32"
+          />
           <div className="min-w-0">
             <p className="text-sm font-bold text-ink">{String(c.title ?? '')}</p>
-            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{String(c.description ?? '')}</p>
+            <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-ink-muted">
+              {renderFormattedText(String(c.description ?? ''))}
+            </p>
           </div>
         </div>
       );
     }
     case 'KNOWLEDGE_CHECK':
-      return <QuizBlock lessonId={lessonId} block={block} label="Knowledge Check" />;
+      return <QuizBlock lessonId={lessonId} block={block} label="Knowledge Check" onPassed={onQuizPassed} />;
     case 'QUIZ':
-      return <QuizBlock lessonId={lessonId} block={block} label="Lesson Quiz" />;
+      return <QuizBlock lessonId={lessonId} block={block} label="Lesson Quiz" onPassed={onQuizPassed} />;
     case 'NEXT_LESSON':
       return null; // handled by the page-level "Continue" button
     default:
@@ -341,6 +375,15 @@ export const LessonPlayerPage: React.FC = () => {
     },
   });
 
+  // Session-only reveal state: which blocks the learner has marked complete
+  // in THIS visit. Resets on reload/navigation by design — this paces how
+  // content is revealed within a lesson, it isn't a second progress tracker
+  // (lesson/course completion is already persisted separately).
+  const [completedBlockIds, setCompletedBlockIds] = useState<Set<string>>(new Set());
+  const markBlockComplete = (blockId: string) => {
+    setCompletedBlockIds((prev) => (prev.has(blockId) ? prev : new Set(prev).add(blockId)));
+  };
+
   const sortedBlocks = useMemo(
     () => (lesson ? [...lesson.blocks].sort((a, b) => a.sortOrder - b.sortOrder) : []),
     [lesson],
@@ -351,6 +394,15 @@ export const LessonPlayerPage: React.FC = () => {
     const questions = (b.content as { questions?: unknown[] }).questions ?? [];
     return questions.length > 0;
   });
+
+  // HERO_BANNER folds into the page header and NEXT_LESSON is the page's own
+  // Continue button — neither is "content" a learner marks done, so they're
+  // excluded from the gate below. Every other block (including quiz/check
+  // blocks, which complete via passing) must be done before the lesson-level
+  // complete button appears — this is what stops a learner from finishing
+  // the lesson while blocks above are still locked/unread.
+  const completableBlocks = sortedBlocks.filter((b) => b.type !== 'HERO_BANNER' && b.type !== 'NEXT_LESSON');
+  const allBlocksComplete = completableBlocks.every((b) => completedBlockIds.has(b.id));
 
   if (isLoading || !lesson) {
     return <p className="p-8 text-xs text-ink-faint">Loading lesson...</p>;
@@ -405,9 +457,11 @@ export const LessonPlayerPage: React.FC = () => {
           <ChevronLeft className="h-3.5 w-3.5" /> Back to course
         </button>
 
-        {/* Hero header */}
+        {/* Hero header — fixed aspect ratio (not a fixed height) so the crop
+            is identical to the Lesson Builder's Student Preview and stays
+            consistent across phone/tablet/desktop widths. */}
         <div className="relative overflow-hidden rounded-xl shadow-card">
-          <BlockImage url={heroImage} className="h-56 w-full" />
+          <BlockImage url={heroImage} className="aspect-[3/1] w-full" />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-5">
             {lessonIndex >= 0 && (
@@ -438,9 +492,57 @@ export const LessonPlayerPage: React.FC = () => {
         </div>
 
         <div className="space-y-5">
-          {sortedBlocks.map((block) => {
-            const rendered = renderBlock(lesson.lessonId, block);
-            return rendered ? <div key={block.id}>{rendered}</div> : null;
+          {sortedBlocks.map((block, i) => {
+            const rendered = renderBlock(lesson.lessonId, block, () => markBlockComplete(block.id));
+            if (!rendered) return null;
+
+            const previousBlock = sortedBlocks[i - 1];
+            // Locks only apply while first working through a lesson — once
+            // it's already completed, the block-unlock state (session-only,
+            // resets on reload) would otherwise re-lock everything on every
+            // revisit, blocking a learner from reviewing their own finished lesson.
+            const isLocked =
+              !isAlreadyCompleted &&
+              Boolean(block.style.lockUntilPrevious) &&
+              previousBlock !== undefined &&
+              !completedBlockIds.has(previousBlock.id);
+
+            if (isLocked) {
+              return (
+                <div
+                  key={block.id}
+                  className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-surface-border bg-surface p-6 text-center"
+                >
+                  <Lock className="h-5 w-5 text-ink-faint" />
+                  <p className="text-xs font-medium text-ink-muted">
+                    Complete the previous section to unlock this.
+                  </p>
+                </div>
+              );
+            }
+
+            const isCompleted = completedBlockIds.has(block.id);
+            const showCompleteButton = !NO_MANUAL_COMPLETE.has(block.type);
+
+            return (
+              <div key={block.id}>
+                {rendered}
+                {showCompleteButton && !isCompleted && (
+                  <button
+                    onClick={() => markBlockComplete(block.id)}
+                    className="mt-2 flex items-center gap-1.5 rounded-md border border-surface-border px-3 py-1.5 text-[11px] font-semibold text-ink-muted transition hover:border-accent hover:text-accent"
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Mark Complete
+                  </button>
+                )}
+                {showCompleteButton && isCompleted && (
+                  <p className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-status-success">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Completed
+                  </p>
+                )}
+              </div>
+            );
           })}
         </div>
 
@@ -449,7 +551,7 @@ export const LessonPlayerPage: React.FC = () => {
             <p className="flex items-center gap-1.5 text-xs font-semibold text-status-success">
               <CheckCircle2 className="h-4 w-4" /> Lesson already completed
             </p>
-          ) : (
+          ) : allBlocksComplete ? (
             <button
               onClick={() => completeMutation.mutate()}
               disabled={completeMutation.isPending}
@@ -457,10 +559,14 @@ export const LessonPlayerPage: React.FC = () => {
             >
               {completeMutation.isPending ? 'Saving...' : 'Mark Complete & Continue'} <ArrowRight className="h-3.5 w-3.5" />
             </button>
+          ) : (
+            <p className="text-[11px] font-medium text-ink-faint">
+              Complete every section above to finish this lesson.
+            </p>
           )}
-          {hasUnresolvedAssessment && !isAlreadyCompleted && (
+          {hasUnresolvedAssessment && !isAlreadyCompleted && allBlocksComplete && (
             <p className="mt-2 text-[11px] text-ink-faint">
-              You can mark this lesson complete at any point — passing the checks above earns bonus XP.
+              Passing the checks above earns bonus XP.
             </p>
           )}
         </div>

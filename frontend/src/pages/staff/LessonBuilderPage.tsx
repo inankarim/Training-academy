@@ -82,6 +82,19 @@ export const LessonBuilderPage: React.FC = () => {
     [lessonId],
   );
 
+  const handleToggleLock = async (blockId: string, locked: boolean) => {
+    if (!lessonId) return;
+    const target = blocks.find((b) => b.id === blockId);
+    if (!target) return;
+    const nextStyle = { ...target.style, lockUntilPrevious: locked };
+    setBlocks((prev) => prev.map((b) => (b.id === blockId ? { ...b, style: nextStyle } : b)));
+    try {
+      await updateBlockApi(lessonId, blockId, { style: nextStyle });
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to update block visibility');
+    }
+  };
+
   const handleDeleteBlock = async (blockId: string) => {
     if (!lessonId || !window.confirm('Delete this content block?')) return;
     try {
@@ -242,6 +255,7 @@ export const LessonBuilderPage: React.FC = () => {
             onReorder={handleReorder}
             onDelete={handleDeleteBlock}
             onContentChange={handleContentChange}
+            onToggleLock={handleToggleLock}
             onOpenLibrary={() => setLeftTab('library')}
           />
         </main>

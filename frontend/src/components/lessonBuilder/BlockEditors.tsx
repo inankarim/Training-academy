@@ -1,6 +1,8 @@
 import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { FileUploadField } from '../shared/FileUploadField';
+import { countWords, enforceWordLimit } from '../../utils/wordLimit';
+import clsx from 'clsx';
 
 const label = 'block text-[11px] font-semibold uppercase tracking-wider text-ink-muted';
 const input =
@@ -14,6 +16,49 @@ interface EditorProps {
 
 function field<T = string>(content: Content, key: string, fallback: T): T {
   return (content[key] as T) ?? fallback;
+}
+
+/**
+ * A textarea with a live word count and the bold-markup hint. When maxWords
+ * is given, input is hard-capped — typing or pasting past the limit is
+ * truncated right at the word boundary (preserving line breaks already in
+ * the text) rather than silently growing forever, and the counter turns red
+ * at the limit. Without maxWords, it's just an unbounded running count.
+ */
+function LimitedTextarea({
+  value,
+  onChange,
+  rows,
+  placeholder,
+  maxWords,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  rows: number;
+  placeholder?: string;
+  maxWords?: number;
+}) {
+  const wordCount = countWords(value);
+  const atLimit = maxWords !== undefined && wordCount >= maxWords;
+  return (
+    <div>
+      <textarea
+        className={input}
+        rows={rows}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(maxWords ? enforceWordLimit(e.target.value, maxWords) : e.target.value)}
+      />
+      <div className="mt-1 flex items-center justify-between gap-2">
+        <p className="text-[10px] text-ink-faint">
+          Tip: wrap text like <code className="rounded bg-surface px-1">{'\\b bold \\b'}</code> to make it bold.
+        </p>
+        <span className={clsx('shrink-0 text-[10px] font-semibold', atLimit ? 'text-status-danger' : 'text-ink-faint')}>
+          {maxWords ? `${wordCount} / ${maxWords} words` : `${wordCount} words`}
+        </span>
+      </div>
+    </div>
+  );
 }
 
 // --- MEDIA ---
@@ -167,11 +212,10 @@ export const PdfEditor: React.FC<EditorProps> = ({ content, onChange }) => (
 export const RichTextEditor: React.FC<EditorProps> = ({ content, onChange }) => (
   <div>
     <label className={label}>Paragraph</label>
-    <textarea
-      className={input}
+    <LimitedTextarea
       rows={5}
       value={field(content, 'html', '')}
-      onChange={(e) => onChange({ ...content, html: e.target.value })}
+      onChange={(html) => onChange({ ...content, html })}
       placeholder="Write the lesson content..."
     />
   </div>
@@ -185,7 +229,12 @@ export const CalloutEditor: React.FC<EditorProps> = ({ content, onChange }) => (
     </div>
     <div>
       <label className={label}>Message</label>
-      <textarea className={input} rows={3} value={field(content, 'message', '')} onChange={(e) => onChange({ ...content, message: e.target.value })} />
+      <LimitedTextarea
+        rows={3}
+        maxWords={300}
+        value={field(content, 'message', '')}
+        onChange={(message) => onChange({ ...content, message })}
+      />
     </div>
     <div>
       <label className={label}>Style</label>
@@ -216,7 +265,16 @@ export const ImageTextEditor: React.FC<EditorProps> = ({ content, onChange }) =>
       </div>
       <div>
         <label className={label}>Description</label>
-        <textarea className={input} rows={3} value={field(content, 'description', '')} onChange={(e) => onChange({ ...content, description: e.target.value })} />
+        {/* Lower cap than Callout (300) — this block only ever has a
+            compact thumbnail's worth of space next to it (a fixed 128px
+            square on desktop), so a full 300-word essay would always
+            overwhelm the card regardless of screen size. */}
+        <LimitedTextarea
+          rows={3}
+          maxWords={150}
+          value={field(content, 'description', '')}
+          onChange={(description) => onChange({ ...content, description })}
+        />
       </div>
       <div>
         <label className={label}>Image Position</label>
