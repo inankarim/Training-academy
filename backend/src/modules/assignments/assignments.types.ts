@@ -1,4 +1,4 @@
-export type AssignmentStatus = 'assigned' | 'in_progress' | 'completed';
+export type AssignmentStatus = 'assigned' | 'in_progress' | 'completed' | 'overdue';
 
 export interface AssignmentRecord {
   id: string;
@@ -9,6 +9,7 @@ export interface AssignmentRecord {
   status: AssignmentStatus;
   assigned_at: Date;
   completed_at: Date | null;
+  overdue_notified_at: Date | null;
   created_at: Date;
   updated_at: Date;
 }

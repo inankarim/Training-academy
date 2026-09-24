@@ -3,7 +3,7 @@ import { AssignmentRecord, AssignmentStatus, AssignmentFilters, CreateAssignment
 
 const ASSIGNMENT_SELECT = `
   SELECT id, course_id, assigned_to, assigned_by, due_date::text AS due_date, status,
-         assigned_at, completed_at, created_at, updated_at
+         assigned_at, completed_at, overdue_notified_at, created_at, updated_at
   FROM course_assignments
 `;
 
@@ -15,7 +15,7 @@ export async function insertAssignment(
     `INSERT INTO course_assignments (course_id, assigned_to, assigned_by, due_date)
      VALUES ($1, $2, $3, $4)
      RETURNING id, course_id, assigned_to, assigned_by, due_date::text AS due_date, status,
-               assigned_at, completed_at, created_at, updated_at`,
+               assigned_at, completed_at, overdue_notified_at, created_at, updated_at`,
     [input.courseId, input.userId, assignedBy, input.dueDate],
   );
   return rows[0];
