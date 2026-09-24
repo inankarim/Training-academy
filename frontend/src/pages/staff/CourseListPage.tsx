@@ -44,7 +44,7 @@ export const CourseListPage: React.FC = () => {
         <SummaryTile icon={Archive} label="Archived" value={counts?.archived ?? 0} tone="text-ink-muted" />
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-surface-border bg-white shadow-card">
+      <div className="overflow-hidden rounded-lg border border-surface-border bg-surface-card shadow-card">
         {isLoading ? (
           <div className="p-10 text-center text-xs text-ink-muted">
             <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
@@ -126,7 +126,7 @@ function SummaryTile({
   tone: string;
 }) {
   return (
-    <div className="rounded-lg border border-surface-border bg-white p-4 shadow-card">
+    <div className="rounded-lg border border-surface-border bg-surface-card p-4 shadow-card">
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-muted">{label}</span>
         <Icon className={clsx('h-4 w-4', tone)} />

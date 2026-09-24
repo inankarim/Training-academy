@@ -1,5 +1,15 @@
 /** @type {import('tailwindcss').Config} */
+
+// Each color is a CSS variable holding "R G B" (space-separated), so Tailwind's
+// opacity modifiers (bg-accent/10, etc.) keep working via the rgb(var(--x) / <alpha-value>)
+// pattern, while the variable itself can be redefined per-theme in index.css
+// (:root for light, .dark for dark) without touching any component className.
+function withOpacity(cssVar) {
+  return `rgb(var(${cssVar}) / <alpha-value>)`;
+}
+
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
@@ -7,37 +17,37 @@ export default {
         // Primary accent — a deepened, industrial red rather than a stock
         // "brand red". Used sparingly: active states, key CTAs, alerts.
         accent: {
-          DEFAULT: '#8B1E1E',
-          hover: '#731818',
-          subtle: '#F7E8E8',
+          DEFAULT: withOpacity('--color-accent'),
+          hover: withOpacity('--color-accent-hover'),
+          subtle: withOpacity('--color-accent-subtle'),
         },
         // Sidebar / dark chrome — a cool charcoal, not flat black.
         charcoal: {
-          DEFAULT: '#12151A',
-          soft: '#1C2028',
-          border: '#2A2F3A',
+          DEFAULT: withOpacity('--color-charcoal'),
+          soft: withOpacity('--color-charcoal-soft'),
+          border: withOpacity('--color-charcoal-border'),
         },
         // Content area — warm off-white, deliberately not stark #FFFFFF
         // and not the generic AI-tell cream.
         surface: {
-          DEFAULT: '#F5F4F2',
-          card: '#FFFFFF',
-          border: '#DDD9D3',
+          DEFAULT: withOpacity('--color-surface'),
+          card: withOpacity('--color-surface-card'),
+          border: withOpacity('--color-surface-border'),
         },
         ink: {
-          DEFAULT: '#1C2128',
-          muted: '#6B7280',
-          faint: '#9CA3AF',
+          DEFAULT: withOpacity('--color-ink'),
+          muted: withOpacity('--color-ink-muted'),
+          faint: withOpacity('--color-ink-faint'),
         },
         // Semantic status colors — used for health checks, quiz results,
         // assignment status, etc.
         status: {
-          success: '#1F7A4D',
-          successSubtle: '#E6F4ED',
-          warning: '#B5730A',
-          warningSubtle: '#FBF0DE',
-          danger: '#A3271F',
-          dangerSubtle: '#F8E9E7',
+          success: withOpacity('--color-status-success'),
+          successSubtle: withOpacity('--color-status-success-subtle'),
+          warning: withOpacity('--color-status-warning'),
+          warningSubtle: withOpacity('--color-status-warning-subtle'),
+          danger: withOpacity('--color-status-danger'),
+          dangerSubtle: withOpacity('--color-status-danger-subtle'),
         },
       },
       fontFamily: {

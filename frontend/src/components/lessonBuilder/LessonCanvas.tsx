@@ -50,7 +50,7 @@ function SortableBlockRow({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="rounded-lg border border-surface-border bg-white shadow-card">
+    <div ref={setNodeRef} style={style} className="rounded-lg border border-surface-border bg-surface-card shadow-card">
       <div className="flex items-center gap-2.5 px-3 py-2.5">
         <button {...attributes} {...listeners} className="cursor-grab text-ink-faint hover:text-ink-muted">
           <GripVertical className="h-4 w-4" />

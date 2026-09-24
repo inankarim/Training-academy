@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { getLearnerDashboardApi } from '../services/learner.service';
+import { ThemeToggle } from '../components/shared/ThemeToggle';
 import {
   BookOpen,
   Award,
@@ -28,7 +29,7 @@ export const LearnerLayout: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col bg-surface font-sans text-ink">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-20 border-b border-surface-border bg-white px-6">
+      <header className="sticky top-0 z-20 border-b border-surface-border bg-surface-card px-6">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between">
           <div className="flex items-center gap-8">
             {/* Logo */}
@@ -116,6 +117,8 @@ export const LearnerLayout: React.FC = () => {
               </button>
             )}
 
+            <ThemeToggle variant="light-chrome" />
+
             {/* User pill */}
             <div className="flex items-center gap-2">
               <div className="text-right">
@@ -139,7 +142,7 @@ export const LearnerLayout: React.FC = () => {
         <Outlet />
       </main>
 
-      <footer className="border-t border-surface-border bg-white py-4 text-center text-xs text-ink-faint">
+      <footer className="border-t border-surface-border bg-surface-card py-4 text-center text-xs text-ink-faint">
         Holcim Academy &copy; {new Date().getFullYear()} — Enterprise Learning & Gamification Platform
       </footer>
     </div>

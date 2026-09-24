@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { ThemeToggle } from '../components/shared/ThemeToggle';
 import {
   LayoutDashboard,
   Users,
@@ -170,13 +171,14 @@ export const StaffLayout: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 items-center justify-between border-b border-surface-border bg-white px-8">
+        <header className="flex h-16 items-center justify-between border-b border-surface-border bg-surface-card px-8">
           <div>
             <h1 className="text-sm font-semibold uppercase tracking-wider text-ink-muted">
               Holcim Management Portal
             </h1>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggle variant="light-chrome" />
             <button
               onClick={() => navigate('/learner/dashboard')}
               className="rounded border border-surface-border px-3 py-1.5 text-xs font-medium text-ink-muted hover:border-ink hover:text-ink"

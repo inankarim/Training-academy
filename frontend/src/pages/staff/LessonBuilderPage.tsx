@@ -141,7 +141,7 @@ export const LessonBuilderPage: React.FC = () => {
   return (
     <div className="flex h-screen flex-col bg-surface">
       {/* Top bar */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-surface-border bg-white px-5">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-surface-border bg-surface-card px-5">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(`/staff/courses/${courseId}/edit`)}
@@ -159,7 +159,7 @@ export const LessonBuilderPage: React.FC = () => {
           <button
             onClick={() => persistLessonInfo()}
             disabled={saving}
-            className="rounded-md border border-surface-border bg-white px-3.5 py-1.5 text-xs font-semibold text-ink-muted transition hover:border-accent hover:text-accent disabled:opacity-50"
+            className="rounded-md border border-surface-border bg-surface-card px-3.5 py-1.5 text-xs font-semibold text-ink-muted transition hover:border-accent hover:text-accent disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Draft'}
           </button>
@@ -184,7 +184,7 @@ export const LessonBuilderPage: React.FC = () => {
       {/* Three-panel layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel: Lesson Info / Content Library toggle */}
-        <div className="flex w-72 shrink-0 flex-col border-r border-surface-border bg-white">
+        <div className="flex w-72 shrink-0 flex-col border-r border-surface-border bg-surface-card">
           <div className="flex border-b border-surface-border">
             <button
               onClick={() => setLeftTab('info')}
@@ -213,7 +213,7 @@ export const LessonBuilderPage: React.FC = () => {
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs text-ink focus:border-accent focus:bg-white focus:outline-none"
+                  className="mt-1 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none"
                 />
               </div>
               <div>
@@ -222,7 +222,7 @@ export const LessonBuilderPage: React.FC = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
-                  className="mt-1 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs text-ink focus:border-accent focus:bg-white focus:outline-none"
+                  className="mt-1 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none"
                 />
               </div>
               <div className="rounded-md border border-surface-border bg-surface p-3">
@@ -261,7 +261,7 @@ export const LessonBuilderPage: React.FC = () => {
         </main>
 
         {/* Right: Student Preview */}
-        <aside className="w-72 shrink-0 border-l border-surface-border bg-white">
+        <aside className="w-72 shrink-0 border-l border-surface-border bg-surface-card">
           <StudentPreview lessonTitle={title} blocks={blocks} />
         </aside>
       </div>

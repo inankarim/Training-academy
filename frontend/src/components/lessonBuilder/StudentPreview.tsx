@@ -26,7 +26,7 @@ function renderBlock(block: LessonBlock): React.ReactNode {
               a fixed height here (e.g. h-24) would crop this narrow phone
               mockup harder than the real full-width page for the same image. */}
           <PreviewImage url={bannerImage.url} className="aspect-[3/1] w-full rounded-none" />
-          <div className="bg-white p-2.5">
+          <div className="bg-surface-card p-2.5">
             <p className="text-[9px] font-bold uppercase tracking-wider text-accent">{String(c.moduleTitle ?? 'Module')}</p>
             <p className="text-xs font-bold text-ink">{String(c.lessonTitle ?? 'Lesson title')}</p>
           </div>
@@ -135,7 +135,7 @@ export const StudentPreview: React.FC<StudentPreviewProps> = ({ lessonTitle, blo
     <div className="flex h-full flex-col">
       <h2 className="flex items-center gap-2 px-4 pt-4 text-sm font-bold text-ink">Student Preview</h2>
       <div className="flex flex-1 items-start justify-center overflow-y-auto p-4">
-        <div className="w-full max-w-[220px] overflow-hidden rounded-[1.5rem] border-4 border-charcoal bg-white shadow-2xl">
+        <div className="w-full max-w-[220px] overflow-hidden rounded-[1.5rem] border-4 border-charcoal bg-surface-card shadow-2xl">
           <div className="flex items-center justify-between bg-charcoal px-3 py-2">
             <span className="text-[9px] font-bold text-accent">HOLCIM ACADEMY</span>
             <div className="h-3 w-3 rounded-full bg-white/20" />

@@ -37,7 +37,7 @@ export const LearnerLoginPage: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col bg-surface">
       {/* Top corporate bar */}
-      <header className="border-b border-surface-border bg-white px-6 py-4">
+      <header className="border-b border-surface-border bg-surface-card px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded bg-accent font-bold text-white shadow-sm">
@@ -61,7 +61,7 @@ export const LearnerLoginPage: React.FC = () => {
       {/* Main Login Area */}
       <main className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <div className="rounded-xl border border-surface-border bg-white p-8 shadow-card">
+          <div className="rounded-xl border border-surface-border bg-surface-card p-8 shadow-card">
             <div className="mb-6 text-center">
               <span className="inline-block rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold tracking-wide text-accent">
                 Employee Learning Portal
@@ -90,7 +90,7 @@ export const LearnerLoginPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="employee@holcim.com"
-                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
                 />
               </div>
 
@@ -104,7 +104,7 @@ export const LearnerLoginPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
                 />
               </div>
 

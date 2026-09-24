@@ -214,7 +214,7 @@ export const CourseBuilderPage: React.FC = () => {
           <button
             onClick={handleSaveDraft}
             disabled={saving || !name}
-            className="rounded-md border border-surface-border bg-white px-4 py-2 text-xs font-semibold text-accent transition hover:border-accent disabled:opacity-50"
+            className="rounded-md border border-surface-border bg-surface-card px-4 py-2 text-xs font-semibold text-accent transition hover:border-accent disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Draft'}
           </button>
@@ -251,7 +251,7 @@ export const CourseBuilderPage: React.FC = () => {
         {/* Main column */}
         <div className="space-y-6">
           {/* Course Information */}
-          <section className="rounded-xl border border-surface-border bg-white p-6 shadow-card">
+          <section className="rounded-xl border border-surface-border bg-surface-card p-6 shadow-card">
             <h2 className="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
               <Info className="h-4 w-4 text-accent" /> Course Information
             </h2>
@@ -262,7 +262,7 @@ export const CourseBuilderPage: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Cement Basics"
-                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
                 />
               </div>
             </div>
@@ -274,7 +274,7 @@ export const CourseBuilderPage: React.FC = () => {
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
                 placeholder="Describe the course objectives and content..."
-                className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+                className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
 
@@ -284,7 +284,7 @@ export const CourseBuilderPage: React.FC = () => {
                 <select
                   value={difficulty}
                   onChange={(e) => setDifficulty(e.target.value as CourseDifficulty)}
-                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink focus:border-accent focus:bg-white focus:outline-none"
+                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink focus:border-accent focus:bg-surface-card focus:outline-none"
                 >
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
@@ -298,7 +298,7 @@ export const CourseBuilderPage: React.FC = () => {
                   step="0.5"
                   value={estimatedDuration}
                   onChange={(e) => setEstimatedDuration(e.target.value)}
-                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
                 />
               </div>
               <div>
@@ -307,14 +307,14 @@ export const CourseBuilderPage: React.FC = () => {
                   type="number"
                   value={totalXpReward}
                   onChange={(e) => setTotalXpReward(e.target.value)}
-                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
                 />
               </div>
             </div>
           </section>
 
           {/* Course Banner */}
-          <section className="rounded-xl border border-surface-border bg-white p-6 shadow-card">
+          <section className="rounded-xl border border-surface-border bg-surface-card p-6 shadow-card">
             <h2 className="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
               <ImageIcon className="h-4 w-4 text-accent" /> Course Banner
             </h2>
@@ -342,7 +342,7 @@ export const CourseBuilderPage: React.FC = () => {
           </section>
 
           {/* Course Lessons */}
-          <section className="rounded-xl border border-surface-border bg-white p-6 shadow-card">
+          <section className="rounded-xl border border-surface-border bg-surface-card p-6 shadow-card">
             <h2 className="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
               <BookOpen className="h-4 w-4 text-accent" /> Course Lessons
             </h2>
@@ -357,7 +357,7 @@ export const CourseBuilderPage: React.FC = () => {
           </section>
 
           {/* Final Course Quiz */}
-          <section className="rounded-xl border border-surface-border bg-white p-6 shadow-card">
+          <section className="rounded-xl border border-surface-border bg-surface-card p-6 shadow-card">
             <h2 className="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
               <ClipboardList className="h-4 w-4 text-accent" /> Final Course Quiz
             </h2>
@@ -374,7 +374,7 @@ export const CourseBuilderPage: React.FC = () => {
                       value={quizName}
                       onChange={(e) => setQuizName(e.target.value)}
                       onBlur={handleSaveQuizConfig}
-                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-white focus:outline-none"
+                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none"
                     />
                   </div>
                   <div>
@@ -384,7 +384,7 @@ export const CourseBuilderPage: React.FC = () => {
                       value={quizXp}
                       onChange={(e) => setQuizXp(e.target.value)}
                       onBlur={handleSaveQuizConfig}
-                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-white focus:outline-none"
+                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none"
                     />
                   </div>
                 </div>
@@ -396,7 +396,7 @@ export const CourseBuilderPage: React.FC = () => {
                       value={totalQuestions}
                       onChange={(e) => setTotalQuestions(e.target.value)}
                       onBlur={handleSaveQuizConfig}
-                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-white focus:outline-none"
+                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none"
                     />
                   </div>
                   <div>
@@ -406,7 +406,7 @@ export const CourseBuilderPage: React.FC = () => {
                       value={passingScore}
                       onChange={(e) => setPassingScore(e.target.value)}
                       onBlur={handleSaveQuizConfig}
-                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-white focus:outline-none"
+                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none"
                     />
                   </div>
                   <div>
@@ -415,7 +415,7 @@ export const CourseBuilderPage: React.FC = () => {
                       value={maxAttempts}
                       onChange={(e) => { setMaxAttempts(e.target.value); }}
                       onBlur={handleSaveQuizConfig}
-                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink focus:border-accent focus:bg-white focus:outline-none"
+                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink focus:border-accent focus:bg-surface-card focus:outline-none"
                     >
                       {[1, 2, 3, 4, 5].map((n) => (
                         <option key={n} value={n}>{n}</option>
@@ -437,7 +437,7 @@ export const CourseBuilderPage: React.FC = () => {
 
         {/* Sidebar */}
         <aside className="space-y-4">
-          <div className="sticky top-6 rounded-xl border border-surface-border bg-white p-5 shadow-card">
+          <div className="sticky top-6 rounded-xl border border-surface-border bg-surface-card p-5 shadow-card">
             <h3 className="text-sm font-bold text-ink">Course Summary</h3>
             <dl className="mt-4 space-y-3 text-xs">
               <div>

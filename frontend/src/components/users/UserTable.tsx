@@ -20,7 +20,7 @@ export const UserTable: React.FC<UserTableProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="overflow-hidden rounded-lg border border-surface-border bg-white shadow-card">
+      <div className="overflow-hidden rounded-lg border border-surface-border bg-surface-card shadow-card">
         <div className="p-8 text-center text-xs text-ink-muted">
           <div className="mx-auto mb-2 h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
           Loading users from database...
@@ -31,7 +31,7 @@ export const UserTable: React.FC<UserTableProps> = ({
 
   if (users.length === 0) {
     return (
-      <div className="overflow-hidden rounded-lg border border-surface-border bg-white p-12 text-center shadow-card">
+      <div className="overflow-hidden rounded-lg border border-surface-border bg-surface-card p-12 text-center shadow-card">
         <Shield className="mx-auto h-8 w-8 text-ink-faint" />
         <h3 className="mt-3 text-sm font-bold text-ink">No users found</h3>
         <p className="mt-1 text-xs text-ink-muted">
@@ -42,7 +42,7 @@ export const UserTable: React.FC<UserTableProps> = ({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-surface-border bg-white shadow-card">
+    <div className="overflow-hidden rounded-lg border border-surface-border bg-surface-card shadow-card">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs text-ink">
           <thead className="border-b border-surface-border bg-surface font-semibold uppercase tracking-wider text-ink-muted">

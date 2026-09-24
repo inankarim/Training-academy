@@ -47,7 +47,7 @@ export const ChangePasswordPage: React.FC = () => {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-surface px-4 py-12">
-      <div className="w-full max-w-md rounded-xl border border-surface-border bg-white p-8 shadow-card">
+      <div className="w-full max-w-md rounded-xl border border-surface-border bg-surface-card p-8 shadow-card">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-status-warningSubtle text-status-warning">
             <ShieldAlert className="h-6 w-6" />
@@ -76,7 +76,7 @@ export const ChangePasswordPage: React.FC = () => {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="Enter temporary password"
-              className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+              className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 
@@ -90,7 +90,7 @@ export const ChangePasswordPage: React.FC = () => {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Enter new password"
-              className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+              className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 
@@ -104,7 +104,7 @@ export const ChangePasswordPage: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Re-enter new password"
-              className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+              className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2.5 text-sm text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 

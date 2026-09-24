@@ -16,7 +16,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
   showRoleFilter = true,
 }) => {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-surface-border bg-white p-4 shadow-card">
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-surface-border bg-surface-card p-4 shadow-card">
       {/* Search Input */}
       <div className="relative min-w-[240px] flex-1">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-ink-faint" />
@@ -25,7 +25,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
           value={filters.search || ''}
           onChange={(e) => onChange({ ...filters, search: e.target.value, page: 1 })}
           placeholder="Search by name, email, or employee ID..."
-          className="w-full rounded-md border border-surface-border bg-surface py-2 pl-9 pr-3 text-xs text-ink placeholder-ink-faint transition focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+          className="w-full rounded-md border border-surface-border bg-surface py-2 pl-9 pr-3 text-xs text-ink placeholder-ink-faint transition focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
         />
       </div>
 
@@ -34,7 +34,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
         <select
           value={filters.role || ''}
           onChange={(e) => onChange({ ...filters, role: e.target.value || undefined, page: 1 })}
-          className="rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-white focus:outline-none"
+          className="rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none"
         >
           <option value="">All Roles</option>
           <option value="learner">Learner</option>
@@ -55,7 +55,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
             page: 1,
           })
         }
-        className="rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-white focus:outline-none"
+        className="rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none"
       >
         <option value="">All Statuses</option>
         <option value="active">Active</option>

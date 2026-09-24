@@ -149,7 +149,7 @@ export const CreateUserPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="rounded-xl border border-surface-border bg-white p-8 shadow-card">
+      <div className="rounded-xl border border-surface-border bg-surface-card p-8 shadow-card">
         {/* Header */}
         <div className="mb-6 flex flex-col justify-between gap-4 border-b border-surface-border pb-6 sm:flex-row sm:items-center">
           <div>
@@ -224,7 +224,7 @@ export const CreateUserPage: React.FC = () => {
               </div>
 
               {/* Password Box */}
-              <div className="mt-5 rounded-md border border-surface-border bg-white p-4">
+              <div className="mt-5 rounded-md border border-surface-border bg-surface-card p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
                     <Key className="h-4 w-4 text-accent" />
@@ -296,7 +296,7 @@ export const CreateUserPage: React.FC = () => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="e.g. Mahfuzur Rahman"
-                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
                   />
                 </div>
 
@@ -310,7 +310,7 @@ export const CreateUserPage: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="e.g. mahfuzur.rahman@holcim.com"
-                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
                   />
                 </div>
               </div>
@@ -324,7 +324,7 @@ export const CreateUserPage: React.FC = () => {
                     value={roleName}
                     onChange={(e) => setRoleName(e.target.value as UserRole)}
                     disabled={isHR}
-                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-white focus:outline-none disabled:bg-surface/50"
+                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none disabled:bg-surface/50"
                   >
                     <option value="learner">Learner (Employee)</option>
                     {(isAdmin || isSuperAdmin) && (
@@ -352,7 +352,7 @@ export const CreateUserPage: React.FC = () => {
                     value={employeeId}
                     onChange={(e) => setEmployeeId(e.target.value)}
                     placeholder="e.g. EMP-1049"
-                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
                   />
                 </div>
 
@@ -363,7 +363,7 @@ export const CreateUserPage: React.FC = () => {
                   <select
                     value={employeeType}
                     onChange={(e) => setEmployeeType(e.target.value)}
-                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-white focus:outline-none"
+                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none"
                   >
                     {(orgMeta?.employeeTypes || ['Permanent', 'Probationary', 'Contract', 'Consultant', 'Intern']).map(
                       (type) => (
@@ -387,7 +387,7 @@ export const CreateUserPage: React.FC = () => {
                     value={designation}
                     onChange={(e) => setDesignation(e.target.value)}
                     placeholder="e.g. Sales Officer (SO), Technical Service Manager"
-                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink transition focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent"
                   />
                 </div>
 
@@ -431,7 +431,7 @@ export const CreateUserPage: React.FC = () => {
                   <select
                     value={departmentId}
                     onChange={(e) => setDepartmentId(e.target.value)}
-                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-white focus:outline-none"
+                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none"
                   >
                     <option value="">-- Select Department --</option>
                     {orgMeta?.departments.map((d) => (
@@ -449,7 +449,7 @@ export const CreateUserPage: React.FC = () => {
                   <select
                     value={regionId}
                     onChange={handleRegionChange}
-                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-white focus:outline-none"
+                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none"
                   >
                     <option value="">-- Select Region --</option>
                     {orgMeta?.regions.map((r) => (
@@ -470,7 +470,7 @@ export const CreateUserPage: React.FC = () => {
                     value={areaId}
                     onChange={handleAreaChange}
                     disabled={!regionId && availableAreas.length === 0}
-                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-white focus:outline-none disabled:bg-surface/50"
+                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none disabled:bg-surface/50"
                   >
                     <option value="">-- Select Area --</option>
                     {availableAreas.map((a) => (
@@ -489,7 +489,7 @@ export const CreateUserPage: React.FC = () => {
                     value={territoryId}
                     onChange={(e) => setTerritoryId(e.target.value)}
                     disabled={!areaId && availableTerritories.length === 0}
-                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-white focus:outline-none disabled:bg-surface/50"
+                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink transition focus:border-accent focus:bg-surface-card focus:outline-none disabled:bg-surface/50"
                   >
                     <option value="">-- Select Territory --</option>
                     {availableTerritories.map((t) => (
@@ -545,7 +545,7 @@ export const CreateUserPage: React.FC = () => {
                     value={customPassword}
                     onChange={(e) => setCustomPassword(e.target.value)}
                     placeholder="Enter password (at least 10 chars, uppercase, lowercase, number)"
-                    className="mt-1.5 w-full rounded-md border border-surface-border bg-white px-3.5 py-2 text-xs text-ink transition focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent font-mono"
+                    className="mt-1.5 w-full rounded-md border border-surface-border bg-surface-card px-3.5 py-2 text-xs text-ink transition focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent font-mono"
                   />
                   <p className="mt-1.5 text-[11px] text-ink-muted">
                     Must meet corporate standards: 10+ characters, 1 uppercase, 1 lowercase, 1 number.

@@ -169,7 +169,7 @@ export const AssignmentsPage: React.FC = () => {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.4fr_1fr]">
         {/* --- Find Employee --- */}
-        <div className="space-y-3 rounded-lg border border-surface-border bg-white p-4 shadow-card">
+        <div className="space-y-3 rounded-lg border border-surface-border bg-surface-card p-4 shadow-card">
           <h2 className="text-xs font-bold uppercase tracking-wider text-ink-muted">Find Employee</h2>
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint" />
@@ -252,7 +252,7 @@ export const AssignmentsPage: React.FC = () => {
         </div>
 
         {/* --- Select Courses --- */}
-        <div className="space-y-3 rounded-lg border border-surface-border bg-white p-4 shadow-card">
+        <div className="space-y-3 rounded-lg border border-surface-border bg-surface-card p-4 shadow-card">
           <h2 className="text-xs font-bold uppercase tracking-wider text-ink-muted">Select Courses</h2>
 
           {courses.length === 0 && (
@@ -322,7 +322,7 @@ export const AssignmentsPage: React.FC = () => {
         </div>
 
         {/* --- Summary --- */}
-        <div className="space-y-4 self-start rounded-lg border border-surface-border bg-white p-4 shadow-card">
+        <div className="space-y-4 self-start rounded-lg border border-surface-border bg-surface-card p-4 shadow-card">
           <h2 className="text-xs font-bold uppercase tracking-wider text-ink-muted">Summary</h2>
 
           {formError && (
@@ -399,7 +399,7 @@ export const AssignmentsPage: React.FC = () => {
                   'rounded-full px-3 py-1.5 text-xs font-semibold transition',
                   statusFilter === s
                     ? 'bg-accent text-white'
-                    : 'border border-surface-border bg-white text-ink-muted hover:border-ink',
+                    : 'border border-surface-border bg-surface-card text-ink-muted hover:border-ink',
                 )}
               >
                 {s === 'all' ? `All (${assignments.length})` : `${STATUS_META[s].label} (${counts[s]})`}
@@ -408,7 +408,7 @@ export const AssignmentsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-surface-border bg-white shadow-card">
+        <div className="overflow-hidden rounded-lg border border-surface-border bg-surface-card shadow-card">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-surface-border bg-surface text-[11px] uppercase tracking-wider text-ink-muted">
               <tr>

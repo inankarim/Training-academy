@@ -30,7 +30,7 @@ export const StaffDashboard: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Top Banner */}
-      <div className="rounded-xl border border-surface-border bg-white p-6 shadow-card">
+      <div className="rounded-xl border border-surface-border bg-surface-card p-6 shadow-card">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <div className="flex items-center gap-2">
@@ -59,7 +59,7 @@ export const StaffDashboard: React.FC = () => {
             )}
             <button
               onClick={() => navigate('/staff/users')}
-              className="flex items-center gap-2 rounded-md border border-surface-border bg-white px-4 py-2 text-xs font-semibold text-ink shadow-sm transition hover:border-accent hover:text-accent"
+              className="flex items-center gap-2 rounded-md border border-surface-border bg-surface-card px-4 py-2 text-xs font-semibold text-ink shadow-sm transition hover:border-accent hover:text-accent"
             >
               <Users className="h-4 w-4" />
               Manage Users
@@ -70,7 +70,7 @@ export const StaffDashboard: React.FC = () => {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border border-surface-border bg-white p-5 shadow-card">
+        <div className="rounded-lg border border-surface-border bg-surface-card p-5 shadow-card">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
               Total In Scope
@@ -85,7 +85,7 @@ export const StaffDashboard: React.FC = () => {
           <p className="mt-1 text-xs text-ink-muted">Registered employee accounts</p>
         </div>
 
-        <div className="rounded-lg border border-surface-border bg-white p-5 shadow-card">
+        <div className="rounded-lg border border-surface-border bg-surface-card p-5 shadow-card">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
               Active Status
@@ -100,7 +100,7 @@ export const StaffDashboard: React.FC = () => {
           <p className="mt-1 text-xs text-ink-muted">Eligible for training</p>
         </div>
 
-        <div className="rounded-lg border border-surface-border bg-white p-5 shadow-card">
+        <div className="rounded-lg border border-surface-border bg-surface-card p-5 shadow-card">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
               Live Modules
@@ -113,7 +113,7 @@ export const StaffDashboard: React.FC = () => {
           <p className="mt-1 text-xs text-ink-muted">Know Your Holcim, Techno, ONE APP, Products</p>
         </div>
 
-        <div className="rounded-lg border border-surface-border bg-white p-5 shadow-card">
+        <div className="rounded-lg border border-surface-border bg-surface-card p-5 shadow-card">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
               Compliance Rate
@@ -130,7 +130,7 @@ export const StaffDashboard: React.FC = () => {
       {/* Quick Access Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* User Directory Preview */}
-        <div className="rounded-lg border border-surface-border bg-white p-6 shadow-card">
+        <div className="rounded-lg border border-surface-border bg-surface-card p-6 shadow-card">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold text-ink">Employee & Learner Directory</h2>
@@ -181,7 +181,7 @@ export const StaffDashboard: React.FC = () => {
         </div>
 
         {/* Security & Access Overview */}
-        <div className="rounded-lg border border-surface-border bg-white p-6 shadow-card">
+        <div className="rounded-lg border border-surface-border bg-surface-card p-6 shadow-card">
           <h2 className="text-base font-bold text-ink">Role Capabilities & Governance</h2>
           <p className="text-xs text-ink-muted">Authorized security scope for current session</p>
 

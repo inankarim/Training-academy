@@ -117,7 +117,7 @@ const QuizBlock: React.FC<{ lessonId: string; block: LearnerBlock; label: string
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-surface-border bg-white shadow-card">
+    <div className="overflow-hidden rounded-xl border border-surface-border bg-surface-card shadow-card">
       <div className="flex items-center justify-between bg-charcoal px-4 py-3">
         <div className="flex items-center gap-2 text-white">
           <HelpCircle className="h-4 w-4 text-accent" />
@@ -241,7 +241,7 @@ function renderBlock(lessonId: string, block: LearnerBlock, onQuizPassed: () => 
             <div key={i} className="overflow-hidden rounded-xl border border-surface-border shadow-card">
               <BlockImage url={img.url} className="aspect-video w-full" />
               {img.caption && (
-                <p className="border-t border-surface-border bg-white px-2.5 py-1.5 text-[11px] font-medium text-ink-muted">
+                <p className="border-t border-surface-border bg-surface-card px-2.5 py-1.5 text-[11px] font-medium text-ink-muted">
                   {img.caption}
                 </p>
               )}
@@ -266,7 +266,7 @@ function renderBlock(lessonId: string, block: LearnerBlock, onQuizPassed: () => 
           href={c.fileUrl ? String(c.fileUrl) : '#'}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-3 rounded-xl border border-surface-border bg-white p-4 shadow-card transition hover:border-accent"
+          className="flex items-center gap-3 rounded-xl border border-surface-border bg-surface-card p-4 shadow-card transition hover:border-accent"
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10">
             <FileText className="h-4.5 w-4.5 text-accent" />
@@ -276,7 +276,7 @@ function renderBlock(lessonId: string, block: LearnerBlock, onQuizPassed: () => 
       );
     case 'RICH_TEXT':
       return (
-        <div className="rounded-xl border border-surface-border bg-white p-5 shadow-card">
+        <div className="rounded-xl border border-surface-border bg-surface-card p-5 shadow-card">
           <p className="whitespace-pre-line text-sm leading-relaxed text-ink-muted">
             {renderFormattedText(String(c.html ?? ''))}
           </p>
@@ -301,7 +301,7 @@ function renderBlock(lessonId: string, block: LearnerBlock, onQuizPassed: () => 
         // side-by-side card with a fixed-size thumbnail, honoring left/right.
         <div
           className={clsx(
-            'flex flex-col gap-4 rounded-xl border border-surface-border bg-white p-4 shadow-card sm:flex-row',
+            'flex flex-col gap-4 rounded-xl border border-surface-border bg-surface-card p-4 shadow-card sm:flex-row',
             position === 'right' && 'sm:flex-row-reverse',
           )}
         >
@@ -574,7 +574,7 @@ export const LessonPlayerPage: React.FC = () => {
 
       {/* Right sidebar */}
       <div className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
-        <div className="rounded-xl border border-surface-border bg-white p-4 shadow-card">
+        <div className="rounded-xl border border-surface-border bg-surface-card p-4 shadow-card">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-faint">Course Progress</p>
           <div className="mt-2">
             <div className="flex justify-between text-[11px] font-medium text-ink-muted">
@@ -588,19 +588,19 @@ export const LessonPlayerPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl border border-surface-border bg-white p-3 text-center shadow-card">
+          <div className="rounded-xl border border-surface-border bg-surface-card p-3 text-center shadow-card">
             <Award className="mx-auto h-4 w-4 text-accent" />
             <p className="mt-1 text-sm font-bold text-ink">{dashboard?.level ?? 1}</p>
             <p className="text-[9px] text-ink-faint">Current Level</p>
           </div>
-          <div className="rounded-xl border border-surface-border bg-white p-3 text-center shadow-card">
+          <div className="rounded-xl border border-surface-border bg-surface-card p-3 text-center shadow-card">
             <Flame className="mx-auto h-4 w-4 text-amber-600" />
             <p className="mt-1 text-sm font-bold text-ink">{dashboard?.currentStreak ?? 0}</p>
             <p className="text-[9px] text-ink-faint">Day Streak</p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-surface-border bg-white p-4 shadow-card">
+        <div className="rounded-xl border border-surface-border bg-surface-card p-4 shadow-card">
           <div className="flex items-center gap-2 text-ink-muted">
             <LifeBuoy className="h-4 w-4" />
             <h3 className="text-xs font-bold">Need Help?</h3>

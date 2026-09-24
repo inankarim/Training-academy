@@ -37,7 +37,7 @@ export const LearnerDashboard: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <div className="rounded-xl border border-surface-border bg-white p-6 shadow-card">
+      <div className="rounded-xl border border-surface-border bg-surface-card p-6 shadow-card">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ export const LearnerDashboard: React.FC = () => {
         {isLoading && <p className="text-xs text-ink-faint">Loading your assigned courses...</p>}
 
         {!isLoading && courses.length === 0 && (
-          <div className="rounded-lg border border-dashed border-surface-border bg-white p-10 text-center">
+          <div className="rounded-lg border border-dashed border-surface-border bg-surface-card p-10 text-center">
             <BookOpen className="mx-auto mb-3 h-8 w-8 text-ink-faint" />
             <p className="text-sm font-semibold text-ink">No courses assigned yet</p>
             <p className="mt-1 text-xs text-ink-muted">
@@ -116,7 +116,7 @@ export const LearnerDashboard: React.FC = () => {
             return (
               <div
                 key={`${c.courseId}-${c.dueDate}`}
-                className="flex flex-col justify-between rounded-lg border border-surface-border bg-white p-5 shadow-card transition hover:border-accent"
+                className="flex flex-col justify-between rounded-lg border border-surface-border bg-surface-card p-5 shadow-card transition hover:border-accent"
               >
                 <div>
                   <div className="flex items-center justify-between">
@@ -159,7 +159,7 @@ export const LearnerDashboard: React.FC = () => {
 
       {/* Gamification & Challenges Preview */}
       <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-        <div className="rounded-lg border border-surface-border bg-white p-5 shadow-card">
+        <div className="rounded-lg border border-surface-border bg-surface-card p-5 shadow-card">
           <div className="flex items-center gap-2 text-accent">
             <Target className="h-5 w-5" />
             <h3 className="text-sm font-bold text-ink">Daily Challenge</h3>
@@ -173,7 +173,7 @@ export const LearnerDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="rounded-lg border border-surface-border bg-white p-5 shadow-card">
+        <div className="rounded-lg border border-surface-border bg-surface-card p-5 shadow-card">
           <div className="flex items-center gap-2 text-amber-600">
             <Award className="h-5 w-5" />
             <h3 className="text-sm font-bold text-ink">Next Badge</h3>
@@ -187,7 +187,7 @@ export const LearnerDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="rounded-lg border border-surface-border bg-white p-5 shadow-card">
+        <div className="rounded-lg border border-surface-border bg-surface-card p-5 shadow-card">
           <div className="flex items-center gap-2 text-blue-600">
             <Sparkles className="h-5 w-5" />
             <h3 className="text-sm font-bold text-ink">Leaderboard Rank</h3>

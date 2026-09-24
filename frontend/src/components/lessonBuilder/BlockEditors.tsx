@@ -6,7 +6,7 @@ import clsx from 'clsx';
 
 const label = 'block text-[11px] font-semibold uppercase tracking-wider text-ink-muted';
 const input =
-  'mt-1 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs text-ink focus:border-accent focus:bg-white focus:outline-none focus:ring-1 focus:ring-accent';
+  'mt-1 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none focus:ring-1 focus:ring-accent';
 
 type Content = Record<string, unknown>;
 interface EditorProps {
@@ -320,7 +320,7 @@ export function QuestionEditor({
           <span className="text-[10px] text-ink-faint">Points</span>
           <input
             type="number"
-            className="w-16 rounded border border-surface-border bg-white px-2 py-1 text-xs text-ink"
+            className="w-16 rounded border border-surface-border bg-surface-card px-2 py-1 text-xs text-ink"
             value={question.points}
             onChange={(e) => onChange({ ...question, points: parseInt(e.target.value, 10) || 0 })}
           />
@@ -345,7 +345,7 @@ export function QuestionEditor({
               title="Mark as correct answer"
             />
             <input
-              className="flex-1 rounded border border-surface-border bg-white px-2.5 py-1.5 text-xs text-ink focus:border-accent focus:outline-none"
+              className="flex-1 rounded border border-surface-border bg-surface-card px-2.5 py-1.5 text-xs text-ink focus:border-accent focus:outline-none"
               value={opt}
               placeholder={`Option ${i + 1}`}
               onChange={(e) => {

@@ -49,7 +49,7 @@ function SortableLessonRow({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 rounded-md border border-surface-border bg-white px-3 py-2.5"
+      className="flex items-center gap-3 rounded-md border border-surface-border bg-surface-card px-3 py-2.5"
     >
       <button {...attributes} {...listeners} className="cursor-grab text-ink-faint hover:text-ink-muted" title="Drag to reorder">
         <GripVertical className="h-4 w-4" />
@@ -150,7 +150,7 @@ export const CourseLessonsPanel: React.FC<CourseLessonsPanelProps> = ({
       </DndContext>
 
       {adding ? (
-        <div className="flex items-center gap-2 rounded-md border border-accent bg-white px-3 py-2.5">
+        <div className="flex items-center gap-2 rounded-md border border-accent bg-surface-card px-3 py-2.5">
           <input
             autoFocus
             value={newTitle}

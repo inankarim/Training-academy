@@ -71,7 +71,7 @@ export const ContentLibrary: React.FC<ContentLibraryProps> = ({ blockTypes, onAd
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search components..."
-            className="w-full rounded-md border border-surface-border bg-surface py-2 pl-8 pr-2 text-xs text-ink placeholder-ink-faint focus:border-accent focus:bg-white focus:outline-none"
+            className="w-full rounded-md border border-surface-border bg-surface py-2 pl-8 pr-2 text-xs text-ink placeholder-ink-faint focus:border-accent focus:bg-surface-card focus:outline-none"
           />
         </div>
         <div className="mt-2.5 flex flex-wrap gap-1">
@@ -103,7 +103,7 @@ export const ContentLibrary: React.FC<ContentLibraryProps> = ({ blockTypes, onAd
                   <button
                     key={item.type}
                     onClick={() => onAddBlock(item.type)}
-                    className="flex w-full items-center gap-2.5 rounded-md border border-surface-border bg-white px-2.5 py-2 text-left transition hover:border-accent hover:bg-accent/5"
+                    className="flex w-full items-center gap-2.5 rounded-md border border-surface-border bg-surface-card px-2.5 py-2 text-left transition hover:border-accent hover:bg-accent/5"
                   >
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-accent/10 text-accent">
                       <Icon className="h-3.5 w-3.5" />

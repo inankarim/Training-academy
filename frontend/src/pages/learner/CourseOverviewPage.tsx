@@ -57,7 +57,7 @@ export const CourseOverviewPage: React.FC = () => {
           {moduleOrder.map((moduleId) => {
             const lessons = byModule.get(moduleId)!;
             return (
-              <div key={moduleId} className="rounded-lg border border-surface-border bg-white shadow-card">
+              <div key={moduleId} className="rounded-lg border border-surface-border bg-surface-card shadow-card">
                 <div className="border-b border-surface-border px-4 py-3">
                   <h2 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
                     {lessons[0]?.moduleTitle || 'Module'}
@@ -106,7 +106,7 @@ export const CourseOverviewPage: React.FC = () => {
 
       {/* Right sidebar: course progress */}
       <div className="space-y-4">
-        <div className="rounded-lg border border-surface-border bg-white p-4 shadow-card">
+        <div className="rounded-lg border border-surface-border bg-surface-card p-4 shadow-card">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-faint">Course Progress</p>
           <div className="mt-2">
             <div className="flex justify-between text-[11px] font-medium text-ink-muted">
