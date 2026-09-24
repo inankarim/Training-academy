@@ -22,6 +22,7 @@ function SortableBlockRow({
   block,
   index,
   label,
+  previousBlockType,
   expanded,
   onToggleExpand,
   onDelete,
@@ -31,6 +32,7 @@ function SortableBlockRow({
   block: LessonBlock;
   index: number;
   label: string;
+  previousBlockType: string | undefined;
   expanded: boolean;
   onToggleExpand: () => void;
   onDelete: () => void;
@@ -40,8 +42,12 @@ function SortableBlockRow({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
   const Editor = BLOCK_EDITOR_MAP[block.type];
   const isLocked = Boolean(block.style.lockUntilPrevious);
-  // The first block has no "previous" block to gate on, so it can't be locked.
-  const canLock = index > 0;
+  // The first block has no "previous" block to gate on, so it can't be
+  // locked. Neither can the block right after a HERO_BANNER — the banner
+  // folds into the page header on the learner side and is never rendered as
+  // a completable block, so a lock gated on it could never be satisfied and
+  // would leave that block permanently hidden.
+  const canLock = index > 0 && previousBlockType !== 'HERO_BANNER';
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -157,6 +163,7 @@ export const LessonCanvas: React.FC<LessonCanvasProps> = ({
               block={block}
               index={index}
               label={labelFor(block.type, blockTypes)}
+              previousBlockType={index > 0 ? sorted[index - 1].type : undefined}
               expanded={expandedId === block.id}
               onToggleExpand={() => onToggleExpand(block.id)}
               onDelete={() => onDelete(block.id)}

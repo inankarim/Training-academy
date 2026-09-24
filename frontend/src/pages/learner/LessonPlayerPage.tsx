@@ -559,10 +559,16 @@ export const LessonPlayerPage: React.FC = () => {
             // it's already completed, the block-unlock state (session-only,
             // resets on reload) would otherwise re-lock everything on every
             // revisit, blocking a learner from reviewing their own finished lesson.
+            // A lock gated on a HERO_BANNER can never be satisfied — the
+            // banner folds into the page header above and is never a
+            // completable block — so it's ignored here even if saved lesson
+            // content has it set (e.g. from before the Lesson Builder
+            // stopped allowing it).
             const isLocked =
               !isAlreadyCompleted &&
               Boolean(block.style.lockUntilPrevious) &&
               previousBlock !== undefined &&
+              previousBlock.type !== 'HERO_BANNER' &&
               !completedBlockIds.has(previousBlock.id);
 
             if (isLocked) {
