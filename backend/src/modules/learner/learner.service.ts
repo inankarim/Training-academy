@@ -260,10 +260,15 @@ export async function submitBlockAttempt(
 
   const retryPolicy = (blockContent.retryPolicy as DefaultRetryPolicy | undefined) ?? DEFAULT_RETRY_POLICY;
 
-  const answerByQuestion = new Map(input.answers.map((a) => [a.questionId, a.selectedAnswer]));
+  // Compared with both sides trimmed: the selectedAnswer validator already
+  // trims what the learner submits, but authored option/correctAnswer text
+  // (pasted from elsewhere) can carry incidental leading/trailing whitespace
+  // — without normalizing both sides, the objectively correct choice can
+  // fail an exact-equality check on whitespace alone.
+  const answerByQuestion = new Map(input.answers.map((a) => [a.questionId, a.selectedAnswer.trim()]));
   const perQuestion = questions.map((q) => ({
     questionId: q.id,
-    correct: answerByQuestion.get(q.id) === q.correctAnswer,
+    correct: answerByQuestion.get(q.id) === q.correctAnswer.trim(),
   }));
   const passed = perQuestion.length === questions.length && perQuestion.every((p) => p.correct);
   const maxScore = questions.reduce((sum, q) => sum + q.points, 0);
@@ -282,7 +287,7 @@ export async function submitBlockAttempt(
     answers: questions.map((q) => ({
       questionId: q.id,
       selectedAnswer: answerByQuestion.get(q.id) ?? '',
-      correct: answerByQuestion.get(q.id) === q.correctAnswer,
+      correct: answerByQuestion.get(q.id) === q.correctAnswer.trim(),
     })),
     totalScore,
     maxScore,
