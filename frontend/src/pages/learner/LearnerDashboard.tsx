@@ -2,36 +2,15 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../hooks/useAuth';
-import { getLearnerDashboardApi, listLearningPathsApi, listCoursesInPathApi } from '../../services/learner.service';
-import { LearnerCourseSummary } from '../../types/learner.types';
+import { getLearnerDashboardApi, listMyCoursesApi } from '../../services/learner.service';
 import {
   Award,
   Target,
   ArrowRight,
   Sparkles,
   CheckCircle2,
-  Route as RouteIcon,
+  BookOpen,
 } from 'lucide-react';
-import clsx from 'clsx';
-
-async function loadAllAssignedCourses(): Promise<LearnerCourseSummary[]> {
-  const paths = await listLearningPathsApi();
-  const lists = await Promise.all(paths.map((p) => listCoursesInPathApi(p.learningPath)));
-  return lists.flat();
-}
-
-const PATH_TAG_STYLES = [
-  'bg-accent/10 text-accent',
-  'bg-amber-500/10 text-amber-700',
-  'bg-blue-500/10 text-blue-700',
-  'bg-emerald-500/10 text-emerald-700',
-];
-
-function tagStyleFor(path: string): string {
-  let hash = 0;
-  for (let i = 0; i < path.length; i++) hash = (hash * 31 + path.charCodeAt(i)) >>> 0;
-  return PATH_TAG_STYLES[hash % PATH_TAG_STYLES.length];
-}
 
 export const LearnerDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -43,8 +22,8 @@ export const LearnerDashboard: React.FC = () => {
   });
 
   const { data: courses = [], isLoading } = useQuery({
-    queryKey: ['learner-all-courses'],
-    queryFn: loadAllAssignedCourses,
+    queryKey: ['learner-courses'],
+    queryFn: listMyCoursesApi,
   });
 
   const completedCount = courses.filter((c) => c.assignmentStatus === 'completed').length;
@@ -112,10 +91,10 @@ export const LearnerDashboard: React.FC = () => {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-ink">Assigned Training Modules</h2>
           <button
-            onClick={() => navigate('/learner/paths')}
+            onClick={() => navigate('/learner/courses')}
             className="flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-hover"
           >
-            <RouteIcon className="h-3.5 w-3.5" /> View All Learning Paths
+            <BookOpen className="h-3.5 w-3.5" /> View All Courses
           </button>
         </div>
 
@@ -123,7 +102,7 @@ export const LearnerDashboard: React.FC = () => {
 
         {!isLoading && courses.length === 0 && (
           <div className="rounded-lg border border-dashed border-surface-border bg-white p-10 text-center">
-            <RouteIcon className="mx-auto mb-3 h-8 w-8 text-ink-faint" />
+            <BookOpen className="mx-auto mb-3 h-8 w-8 text-ink-faint" />
             <p className="text-sm font-semibold text-ink">No courses assigned yet</p>
             <p className="mt-1 text-xs text-ink-muted">
               Your HR team hasn&apos;t assigned any training courses to you. Check back soon.
@@ -141,8 +120,8 @@ export const LearnerDashboard: React.FC = () => {
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className={clsx('rounded px-2 py-0.5 text-[11px] font-semibold', tagStyleFor(c.learningPath))}>
-                      {c.learningPath}
+                    <span className="rounded bg-accent/10 px-2 py-0.5 text-[11px] font-semibold capitalize text-accent">
+                      {c.difficulty}
                     </span>
                     <span className="text-xs text-ink-muted">
                       {c.lessonCount} Lessons &bull; {c.totalXpReward} XP

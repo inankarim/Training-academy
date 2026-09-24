@@ -1,7 +1,6 @@
 import { apiClient } from './apiClient';
 import { ApiResponse } from '../types/auth.types';
 import {
-  LearningPathSummary,
   LearnerCourseSummary,
   LearnerCourseDetail,
   LearnerLessonDetail,
@@ -24,17 +23,8 @@ export async function getLearnerDashboardApi(): Promise<LearnerDashboard> {
   return unwrap(data, 'Failed to fetch dashboard').dashboard;
 }
 
-export async function listLearningPathsApi(): Promise<LearningPathSummary[]> {
-  const { data } = await apiClient.get<ApiResponse<{ learningPaths: LearningPathSummary[] }>>(
-    `${BASE}/learning-paths`,
-  );
-  return unwrap(data, 'Failed to fetch learning paths').learningPaths;
-}
-
-export async function listCoursesInPathApi(learningPath: string): Promise<LearnerCourseSummary[]> {
-  const { data } = await apiClient.get<ApiResponse<{ courses: LearnerCourseSummary[] }>>(
-    `${BASE}/learning-paths/${encodeURIComponent(learningPath)}/courses`,
-  );
+export async function listMyCoursesApi(): Promise<LearnerCourseSummary[]> {
+  const { data } = await apiClient.get<ApiResponse<{ courses: LearnerCourseSummary[] }>>(`${BASE}/courses`);
   return unwrap(data, 'Failed to fetch courses').courses;
 }
 

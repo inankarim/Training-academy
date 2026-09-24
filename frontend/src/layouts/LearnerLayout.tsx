@@ -11,7 +11,7 @@ import {
   LogOut,
   ShieldCheck,
   Activity,
-  Route as RouteIcon,
+  GraduationCap,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -58,7 +58,7 @@ export const LearnerLayout: React.FC = () => {
               </NavLink>
 
               <NavLink
-                to="/learner/paths"
+                to="/learner/courses"
                 className={({ isActive }) =>
                   clsx(
                     'flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium transition',
@@ -66,8 +66,8 @@ export const LearnerLayout: React.FC = () => {
                   )
                 }
               >
-                <RouteIcon className="h-4 w-4" />
-                Learning Paths
+                <GraduationCap className="h-4 w-4" />
+                Courses
               </NavLink>
 
               <NavLink

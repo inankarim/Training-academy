@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import * as controller from './learner.controller';
 import {
-  learningPathParamValidation,
   courseIdParamValidation,
   lessonIdParamValidation,
   blockIdParamValidation,
@@ -18,13 +17,8 @@ export const learnerRouter = Router();
 learnerRouter.use(requireAuth);
 
 learnerRouter.get('/dashboard', controller.getDashboard);
-learnerRouter.get('/learning-paths', controller.listLearningPaths);
-learnerRouter.get(
-  '/learning-paths/:learningPath/courses',
-  learningPathParamValidation,
-  validate,
-  controller.listCoursesInPath,
-);
+// Registered before '/courses/:courseId' so the literal path isn't swallowed by the UUID param route.
+learnerRouter.get('/courses', controller.listMyCourses);
 learnerRouter.get('/courses/:courseId', courseIdParamValidation, validate, controller.getCourse);
 learnerRouter.get('/lessons/:lessonId', lessonIdParamValidation, validate, controller.getLesson);
 learnerRouter.post('/lessons/:lessonId/complete', lessonIdParamValidation, validate, controller.completeLesson);

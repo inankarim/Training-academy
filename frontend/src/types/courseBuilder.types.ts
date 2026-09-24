@@ -5,7 +5,6 @@ export type LessonStatus = 'draft' | 'ready' | 'published';
 export interface Course {
   courseId: string;
   name: string;
-  learningPath: string;
   description: string | null;
   difficulty: CourseDifficulty;
   estimatedDuration: number;
@@ -28,7 +27,6 @@ export interface CourseCounts {
 
 export interface CreateCourseInput {
   name: string;
-  learningPath: string;
   description?: string;
   difficulty: CourseDifficulty;
   estimatedDuration: number;

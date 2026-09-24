@@ -35,10 +35,10 @@ export const CourseOverviewPage: React.FC = () => {
       <div className="space-y-5">
         <div>
           <Link
-            to={`/learner/paths/${encodeURIComponent(course.learningPath)}`}
+            to="/learner/courses"
             className="flex items-center gap-1 text-xs font-medium text-ink-muted hover:text-ink"
           >
-            <ChevronLeft className="h-3.5 w-3.5" /> Back to {course.learningPath}
+            <ChevronLeft className="h-3.5 w-3.5" /> Back to My Courses
           </Link>
           <h1 className="mt-2 text-xl font-bold tracking-tight text-ink">{course.name}</h1>
           {course.description && <p className="mt-1 text-xs text-ink-muted">{course.description}</p>}

@@ -9,7 +9,6 @@ export const courseIdParamValidation = [
 
 export const createCourseValidation = [
   body('name').trim().isLength({ min: 2, max: 200 }).withMessage('Course name must be between 2 and 200 characters.'),
-  body('learningPath').trim().isLength({ min: 2, max: 150 }).withMessage('Learning path is required (max 150 characters).'),
   body('description').optional({ nullable: true }).trim().isLength({ max: 2000 }).withMessage('Description cannot exceed 2000 characters.'),
   body('difficulty')
     .trim()
@@ -23,7 +22,6 @@ export const createCourseValidation = [
 
 export const updateCourseValidation = [
   body('name').optional().trim().isLength({ min: 2, max: 200 }).withMessage('Course name must be between 2 and 200 characters.'),
-  body('learningPath').optional().trim().isLength({ min: 2, max: 150 }).withMessage('Learning path cannot exceed 150 characters.'),
   body('description').optional({ nullable: true }).trim().isLength({ max: 2000 }).withMessage('Description cannot exceed 2000 characters.'),
   body('difficulty')
     .optional()

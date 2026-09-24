@@ -4,7 +4,6 @@ export type CourseStatus = 'draft' | 'published' | 'archived';
 export interface CourseRecord {
   id: string;
   created_by: string;
-  learning_path: string;
   name: string;
   description: string | null;
   difficulty: CourseDifficulty;
@@ -18,7 +17,6 @@ export interface CourseRecord {
 
 export interface CreateCourseInput {
   name: string;
-  learningPath: string;
   description?: string | null;
   difficulty: CourseDifficulty;
   estimatedDuration: number;
@@ -28,7 +26,6 @@ export interface CreateCourseInput {
 
 export interface UpdateCourseInput {
   name?: string;
-  learningPath?: string;
   description?: string | null;
   difficulty?: CourseDifficulty;
   estimatedDuration?: number;
@@ -46,7 +43,6 @@ export interface CourseCounts {
 export interface CourseDTO {
   courseId: string;
   name: string;
-  learningPath: string;
   description: string | null;
   difficulty: CourseDifficulty;
   estimatedDuration: number;

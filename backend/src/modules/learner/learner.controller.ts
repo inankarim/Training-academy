@@ -10,18 +10,9 @@ function requesterFrom(req: Request): RequesterContext {
   return { id: req.user!.id, role: req.user!.role };
 }
 
-export async function listLearningPaths(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function listMyCourses(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const learningPaths = await learnerService.listLearningPaths(requesterFrom(req));
-    res.json({ success: true, data: { learningPaths } });
-  } catch (err) {
-    next(err);
-  }
-}
-
-export async function listCoursesInPath(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const courses = await learnerService.listCoursesInPath(requesterFrom(req), req.params.learningPath);
+    const courses = await learnerService.listMyCourses(requesterFrom(req));
     res.json({ success: true, data: { courses } });
   } catch (err) {
     next(err);

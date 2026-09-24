@@ -286,7 +286,7 @@ export const AssignmentsPage: React.FC = () => {
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-ink">{c.name}</p>
                         <p className="mt-0.5 text-[11px] text-ink-muted">
-                          {c.learningPath} &bull; {c.lessonCount} lessons &bull; {c.estimatedDuration}h &bull; {c.totalXpReward} XP
+                          {c.lessonCount} lessons &bull; {c.estimatedDuration}h &bull; {c.totalXpReward} XP
                         </p>
                       </div>
                       {isSelected &&
@@ -414,7 +414,6 @@ export const AssignmentsPage: React.FC = () => {
               <tr>
                 <th className="px-4 py-3 font-semibold">Learner</th>
                 <th className="px-4 py-3 font-semibold">Course</th>
-                <th className="px-4 py-3 font-semibold">Learning Path</th>
                 <th className="px-4 py-3 font-semibold">Due Date</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
                 <th className="px-4 py-3 font-semibold text-right">Actions</th>
@@ -423,14 +422,14 @@ export const AssignmentsPage: React.FC = () => {
             <tbody>
               {isLoading && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-ink-faint">
+                  <td colSpan={5} className="px-4 py-8 text-center text-ink-faint">
                     Loading assignments...
                   </td>
                 </tr>
               )}
               {!isLoading && assignments.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-ink-faint">
+                  <td colSpan={5} className="px-4 py-10 text-center text-ink-faint">
                     <ClipboardList className="mx-auto mb-2 h-6 w-6 text-ink-faint" />
                     No assignments yet.
                   </td>
@@ -442,7 +441,6 @@ export const AssignmentsPage: React.FC = () => {
                   <tr key={a.id} className="border-b border-surface-border last:border-0 hover:bg-surface/60">
                     <td className="px-4 py-3 font-medium text-ink">{a.assignedToName}</td>
                     <td className="px-4 py-3 text-ink-muted">{a.courseName}</td>
-                    <td className="px-4 py-3 text-ink-muted">{a.learningPath}</td>
                     <td className="px-4 py-3 text-ink-muted">{a.dueDate}</td>
                     <td className="px-4 py-3">
                       <span

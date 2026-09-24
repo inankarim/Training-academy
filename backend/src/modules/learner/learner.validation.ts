@@ -1,9 +1,5 @@
 import { param, body } from 'express-validator';
 
-export const learningPathParamValidation = [
-  param('learningPath').isString().trim().notEmpty().withMessage('A learning path is required.'),
-];
-
 export const courseIdParamValidation = [param('courseId').isUUID().withMessage('A valid course ID is required.')];
 export const lessonIdParamValidation = [param('lessonId').isUUID().withMessage('A valid lesson ID is required.')];
 export const blockIdParamValidation = [

@@ -61,7 +61,6 @@ export const CourseListPage: React.FC = () => {
             <thead className="border-b border-surface-border bg-surface font-semibold uppercase tracking-wider text-ink-muted">
               <tr>
                 <th className="px-5 py-3.5">Course</th>
-                <th className="px-5 py-3.5">Learning Path</th>
                 <th className="px-5 py-3.5">Status</th>
                 <th className="px-5 py-3.5">Lessons</th>
                 <th className="px-5 py-3.5">Setup Progress</th>
@@ -81,7 +80,6 @@ export const CourseListPage: React.FC = () => {
                       <div className="font-semibold text-ink">{course.name}</div>
                       <div className="text-[11px] text-ink-muted">{course.totalXpReward} XP</div>
                     </td>
-                    <td className="px-5 py-4 text-ink-muted">{course.learningPath}</td>
                     <td className="px-5 py-4">
                       <span className={clsx('inline-block rounded px-2 py-0.5 text-[11px] font-semibold', statusMeta.className)}>
                         {statusMeta.label}

@@ -3,18 +3,9 @@ export interface RequesterContext {
   role: string;
 }
 
-export interface LearningPathSummaryDTO {
-  learningPath: string;
-  courseCount: number;
-  totalDurationHours: number;
-  totalXpReward: number;
-  pathProgress: number; // 0-100, average of assigned courses' completion %
-}
-
 export interface LearnerCourseSummaryDTO {
   courseId: string;
   name: string;
-  learningPath: string;
   description: string | null;
   difficulty: string;
   estimatedDuration: number;
@@ -53,6 +44,8 @@ export interface LearnerLessonDetailDTO {
     sortOrder: number;
     content: Record<string, unknown>;
     style: Record<string, unknown>;
+    /** KNOWLEDGE_CHECK/QUIZ only — true once the learner has ever passed this exact block, server-verified. */
+    alreadyCompleted?: boolean;
   }>;
 }
 

@@ -28,8 +28,6 @@ import {
   UploadCloud,
 } from 'lucide-react';
 
-const LEARNING_PATHS = ['Techno Functions', 'Know Your Holcim', 'ONE APP Master Guide', 'Product Knowledge'];
-
 export const CourseBuilderPage: React.FC = () => {
   const { courseId: routeCourseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
@@ -39,7 +37,6 @@ export const CourseBuilderPage: React.FC = () => {
   const isEditMode = Boolean(courseId);
 
   const [name, setName] = useState('');
-  const [learningPath, setLearningPath] = useState(LEARNING_PATHS[0]);
   const [description, setDescription] = useState('');
   const [difficulty, setDifficulty] = useState<CourseDifficulty>('intermediate');
   const [estimatedDuration, setEstimatedDuration] = useState('');
@@ -80,7 +77,6 @@ export const CourseBuilderPage: React.FC = () => {
   useEffect(() => {
     if (course) {
       setName(course.name);
-      setLearningPath(course.learningPath);
       setDescription(course.description ?? '');
       setDifficulty(course.difficulty);
       setEstimatedDuration(String(course.estimatedDuration));
@@ -109,7 +105,6 @@ export const CourseBuilderPage: React.FC = () => {
 
   const buildInput = () => ({
     name,
-    learningPath,
     description: description || undefined,
     difficulty,
     estimatedDuration: parseFloat(estimatedDuration) || 0,
@@ -212,19 +207,13 @@ export const CourseBuilderPage: React.FC = () => {
           <button onClick={() => navigate('/staff/courses')} className="flex items-center gap-1 hover:text-ink">
             <ArrowLeft className="h-3.5 w-3.5" /> Courses
           </button>
-          {learningPath && (
-            <>
-              <span>/</span>
-              <span>{learningPath}</span>
-            </>
-          )}
           <span>/</span>
           <span className="font-semibold text-ink">{isEditMode ? 'Edit Course' : 'Create Course'}</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleSaveDraft}
-            disabled={saving || !name || !learningPath}
+            disabled={saving || !name}
             className="rounded-md border border-surface-border bg-white px-4 py-2 text-xs font-semibold text-accent transition hover:border-accent disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Draft'}
@@ -267,18 +256,6 @@ export const CourseBuilderPage: React.FC = () => {
               <Info className="h-4 w-4 text-accent" /> Course Information
             </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-ink">Learning Path</label>
-                <select
-                  value={learningPath}
-                  onChange={(e) => setLearningPath(e.target.value)}
-                  className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink focus:border-accent focus:bg-white focus:outline-none"
-                >
-                  {LEARNING_PATHS.map((p) => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
-              </div>
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-ink">Course Name</label>
                 <input
@@ -463,10 +440,6 @@ export const CourseBuilderPage: React.FC = () => {
           <div className="sticky top-6 rounded-xl border border-surface-border bg-white p-5 shadow-card">
             <h3 className="text-sm font-bold text-ink">Course Summary</h3>
             <dl className="mt-4 space-y-3 text-xs">
-              <div>
-                <dt className="font-medium uppercase tracking-wider text-ink-faint">Path</dt>
-                <dd className="mt-0.5 font-semibold text-ink">{learningPath || '—'}</dd>
-              </div>
               <div>
                 <dt className="font-medium uppercase tracking-wider text-ink-faint">Name</dt>
                 <dd className="mt-0.5 font-semibold text-ink">{name || '—'}</dd>

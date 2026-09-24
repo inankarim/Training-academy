@@ -57,7 +57,6 @@ function toDTO(
   return {
     courseId: course.id,
     name: course.name,
-    learningPath: course.learning_path,
     description: course.description,
     difficulty: course.difficulty,
     estimatedDuration: Number(course.estimated_duration),
@@ -128,7 +127,7 @@ export async function createCourse(
     action: 'course.create',
     targetType: 'course',
     targetId: course.id,
-    metadata: { name: course.name, learningPath: course.learning_path },
+    metadata: { name: course.name },
     ipAddress: ctx.ip,
     userAgent: ctx.userAgent,
   });

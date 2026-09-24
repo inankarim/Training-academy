@@ -2,7 +2,7 @@ import { getPool } from '../../database/postgres';
 import { CourseRecord, CreateCourseInput, UpdateCourseInput, CourseCounts, CourseStatus } from './courses.types';
 
 const COURSE_SELECT = `
-  SELECT id, created_by, learning_path, name, description, difficulty,
+  SELECT id, created_by, name, description, difficulty,
          estimated_duration, total_xp_reward, status, banner_ref, created_at, updated_at
   FROM courses
 `;
@@ -10,14 +10,13 @@ const COURSE_SELECT = `
 export async function insertCourse(createdBy: string, input: CreateCourseInput): Promise<CourseRecord> {
   const { rows } = await getPool().query<CourseRecord>(
     `INSERT INTO courses (
-      created_by, learning_path, name, description, difficulty,
+      created_by, name, description, difficulty,
       estimated_duration, total_xp_reward, banner_ref, status
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'draft')
-    RETURNING id, created_by, learning_path, name, description, difficulty,
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'draft')
+    RETURNING id, created_by, name, description, difficulty,
               estimated_duration, total_xp_reward, status, banner_ref, created_at, updated_at`,
     [
       createdBy,
-      input.learningPath,
       input.name,
       input.description ?? null,
       input.difficulty,
@@ -65,10 +64,6 @@ export async function updateCourse(id: string, data: UpdateCourseInput): Promise
   if (data.name !== undefined) {
     fields.push(`name = $${idx++}`);
     values.push(data.name);
-  }
-  if (data.learningPath !== undefined) {
-    fields.push(`learning_path = $${idx++}`);
-    values.push(data.learningPath);
   }
   if (data.description !== undefined) {
     fields.push(`description = $${idx++}`);

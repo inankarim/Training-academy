@@ -10,7 +10,6 @@ import * as learnerMongoRepo from './learner.mongo.repository';
 import { computeLevel } from './levels';
 import {
   RequesterContext,
-  LearningPathSummaryDTO,
   LearnerCourseSummaryDTO,
   LearnerCourseDetailDTO,
   LearnerLessonDetailDTO,
@@ -54,37 +53,6 @@ async function courseProgress(userId: string, courseId: string) {
   };
 }
 
-export async function listLearningPaths(requester: RequesterContext): Promise<LearningPathSummaryDTO[]> {
-  const courseIds = await assignmentsRepo.findAssignedCourseIdsForLearner(requester.id);
-  const courses = (await coursesRepo.findCoursesByIds(courseIds)).filter((c) => c.status === 'published');
-
-  const byPath = new Map<string, typeof courses>();
-  for (const course of courses) {
-    const list = byPath.get(course.learning_path) ?? [];
-    list.push(course);
-    byPath.set(course.learning_path, list);
-  }
-
-  const summaries: LearningPathSummaryDTO[] = [];
-  for (const [path, pathCourses] of byPath) {
-    const progresses = await Promise.all(pathCourses.map((c) => courseProgress(requester.id, c.id)));
-    const validProgresses = progresses.filter((p): p is NonNullable<typeof p> => p !== null);
-    const avgProgress = validProgresses.length
-      ? Math.round(validProgresses.reduce((sum, p) => sum + p.progress, 0) / validProgresses.length)
-      : 0;
-
-    summaries.push({
-      learningPath: path,
-      courseCount: pathCourses.length,
-      totalDurationHours: pathCourses.reduce((sum, c) => sum + Number(c.estimated_duration), 0),
-      totalXpReward: pathCourses.reduce((sum, c) => sum + c.total_xp_reward, 0),
-      pathProgress: avgProgress,
-    });
-  }
-
-  return summaries;
-}
-
 async function toCourseSummaryDTO(requester: RequesterContext, course: Awaited<ReturnType<typeof coursesRepo.findCourseById>>): Promise<LearnerCourseSummaryDTO | null> {
   if (!course) return null;
   const progress = await courseProgress(requester.id, course.id);
@@ -93,7 +61,6 @@ async function toCourseSummaryDTO(requester: RequesterContext, course: Awaited<R
   return {
     courseId: course.id,
     name: course.name,
-    learningPath: course.learning_path,
     description: course.description,
     difficulty: course.difficulty,
     estimatedDuration: Number(course.estimated_duration),
@@ -107,14 +74,9 @@ async function toCourseSummaryDTO(requester: RequesterContext, course: Awaited<R
   };
 }
 
-export async function listCoursesInPath(
-  requester: RequesterContext,
-  learningPath: string,
-): Promise<LearnerCourseSummaryDTO[]> {
+export async function listMyCourses(requester: RequesterContext): Promise<LearnerCourseSummaryDTO[]> {
   const courseIds = await assignmentsRepo.findAssignedCourseIdsForLearner(requester.id);
-  const courses = (await coursesRepo.findCoursesByIds(courseIds)).filter(
-    (c) => c.status === 'published' && c.learning_path === learningPath,
-  );
+  const courses = (await coursesRepo.findCoursesByIds(courseIds)).filter((c) => c.status === 'published');
   const dtos = await Promise.all(courses.map((c) => toCourseSummaryDTO(requester, c)));
   return dtos.filter((d): d is LearnerCourseSummaryDTO => d !== null);
 }
@@ -140,7 +102,6 @@ export async function getCourseForLearner(
   return {
     courseId: course.id,
     name: course.name,
-    learningPath: course.learning_path,
     description: course.description,
     difficulty: course.difficulty,
     estimatedDuration: Number(course.estimated_duration),
@@ -182,16 +143,41 @@ export async function getLessonForLearner(
   const progressRows = await learnerRepo.listProgressForAssignment(assignment.id);
   const status = progressRows.find((p) => p.lesson_id === lessonId)?.status ?? 'in_progress';
 
+  const rawBlocks = (content?.blocks ?? [])
+    .map((b) => b.toObject())
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const blocks = await Promise.all(
+    rawBlocks.map(async (b) => {
+      if (b.type !== 'KNOWLEDGE_CHECK' && b.type !== 'QUIZ') {
+        return { id: b.id, type: b.type, sortOrder: b.sortOrder, content: b.content, style: b.style };
+      }
+
+      // Never send correctAnswer/explanation to the learner-facing API —
+      // the client only needs these to grade a submission server-side.
+      const blockContent = b.content as Record<string, unknown>;
+      const questions = (blockContent.questions as Array<Record<string, unknown>> | undefined) ?? [];
+      const sanitizedQuestions = questions.map(({ correctAnswer, explanation, ...rest }) => rest);
+      const alreadyCompleted = await learnerMongoRepo.hasPassedBlock(requester.id, lessonId, b.id);
+
+      return {
+        id: b.id,
+        type: b.type,
+        sortOrder: b.sortOrder,
+        content: { ...blockContent, questions: sanitizedQuestions },
+        style: b.style,
+        alreadyCompleted,
+      };
+    }),
+  );
+
   return {
     lessonId: lesson.id,
     courseId: lesson.course_id,
     title: lesson.title,
     description: lesson.description,
     progressStatus: status,
-    blocks: (content?.blocks ?? [])
-      .map((b) => b.toObject())
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((b) => ({ id: b.id, type: b.type, sortOrder: b.sortOrder, content: b.content, style: b.style })),
+    blocks,
   };
 }
 
@@ -260,6 +246,10 @@ export async function submitBlockAttempt(
   if (!block) throw new AppError('Block not found.', 404);
   if (block.type !== 'KNOWLEDGE_CHECK' && block.type !== 'QUIZ') {
     throw new AppError('This block does not accept answer submissions.', 400);
+  }
+
+  if (await learnerMongoRepo.hasPassedBlock(requester.id, lessonId, blockId)) {
+    throw new AppError('You have already completed this check.', 400);
   }
 
   const blockContent = block.content as Record<string, unknown>;

@@ -17,7 +17,6 @@ export interface AssignmentDTO {
   id: string;
   courseId: string;
   courseName: string;
-  learningPath: string;
   assignedTo: string;
   assignedToName: string;
   assignedBy: string;
@@ -47,7 +46,6 @@ export interface RequesterContext {
 export interface AssignableCourseDTO {
   courseId: string;
   name: string;
-  learningPath: string;
   difficulty: string;
   estimatedDuration: number;
   totalXpReward: number;

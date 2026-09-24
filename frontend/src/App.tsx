@@ -30,11 +30,7 @@ const FinalQuizBuilderPage = lazyImport(() => import('./pages/staff/FinalQuizBui
 const LessonBuilderPage = lazyImport(() => import('./pages/staff/LessonBuilderPage'), 'LessonBuilderPage');
 const AssignmentsPage = lazyImport(() => import('./pages/staff/AssignmentsPage'), 'AssignmentsPage');
 
-const LearningPathsPage = lazyImport(() => import('./pages/learner/LearningPathsPage'), 'LearningPathsPage');
-const LearningPathCoursesPage = lazyImport(
-  () => import('./pages/learner/LearningPathCoursesPage'),
-  'LearningPathCoursesPage',
-);
+const CoursesPage = lazyImport(() => import('./pages/learner/CoursesPage'), 'CoursesPage');
 const CourseOverviewPage = lazyImport(() => import('./pages/learner/CourseOverviewPage'), 'CourseOverviewPage');
 const LessonPlayerPage = lazyImport(() => import('./pages/learner/LessonPlayerPage'), 'LessonPlayerPage');
 
@@ -156,8 +152,7 @@ export function App() {
             >
               <Route index element={<Navigate to="/learner/dashboard" replace />} />
               <Route path="dashboard" element={<LearnerDashboard />} />
-              <Route path="paths" element={<LearningPathsPage />} />
-              <Route path="paths/:learningPath" element={<LearningPathCoursesPage />} />
+              <Route path="courses" element={<CoursesPage />} />
               <Route path="courses/:courseId" element={<CourseOverviewPage />} />
               <Route path="lessons/:lessonId" element={<LessonPlayerPage />} />
             </Route>

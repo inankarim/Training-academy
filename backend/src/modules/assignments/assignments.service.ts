@@ -17,7 +17,6 @@ async function toDTO(record: AssignmentRecord): Promise<AssignmentDTO> {
     id: record.id,
     courseId: record.course_id,
     courseName: course?.name ?? 'Unknown course',
-    learningPath: course?.learning_path ?? '',
     assignedTo: record.assigned_to,
     assignedToName: user?.full_name ?? 'Unknown user',
     assignedBy: record.assigned_by,
@@ -78,7 +77,6 @@ export async function listAssignableCourses(): Promise<AssignableCourseDTO[]> {
     courses.map(async (c) => ({
       courseId: c.id,
       name: c.name,
-      learningPath: c.learning_path,
       difficulty: c.difficulty,
       estimatedDuration: Number(c.estimated_duration),
       totalXpReward: c.total_xp_reward,

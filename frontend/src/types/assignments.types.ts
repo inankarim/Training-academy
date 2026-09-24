@@ -4,7 +4,6 @@ export interface Assignment {
   id: string;
   courseId: string;
   courseName: string;
-  learningPath: string;
   assignedTo: string;
   assignedToName: string;
   assignedBy: string;
@@ -29,7 +28,6 @@ export interface AssignmentFilters {
 export interface AssignableCourse {
   courseId: string;
   name: string;
-  learningPath: string;
   difficulty: string;
   estimatedDuration: number;
   totalXpReward: number;
