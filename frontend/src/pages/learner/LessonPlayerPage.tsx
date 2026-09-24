@@ -10,6 +10,7 @@ import {
 } from '../../services/learner.service';
 import { LearnerBlock, LearnerCourseDetail } from '../../types/learner.types';
 import { renderFormattedText } from '../../utils/richTextFormat';
+import { getVideoEmbedUrl } from '../../utils/videoEmbed';
 import {
   ChevronLeft,
   CheckCircle2,
@@ -97,11 +98,12 @@ const QuizBlock: React.FC<{ lessonId: string; block: LearnerBlock; label: string
   const allAnswered = questions.length > 0 && questions.every((q) => Boolean(answers[q.id]));
   const correctCount = result?.perQuestion.filter((p) => p.correct).length ?? 0;
 
-  // An unconfigured check (no questions yet) has nothing to answer — treat it
+  // An unconfigured check (no questions yet), or one the learner has already
+  // passed before (server-verified), has nothing left to do here — treat it
   // as already satisfied so it can never permanently block the unlock chain
   // or the lesson-level "all blocks done" gate below.
   useEffect(() => {
-    if (questions.length === 0) onPassed();
+    if (questions.length === 0 || block.alreadyCompleted) onPassed();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -112,6 +114,24 @@ const QuizBlock: React.FC<{ lessonId: string; block: LearnerBlock; label: string
         <p className="mt-2 text-xs font-medium text-ink-muted">
           This {label.toLowerCase()} hasn&apos;t been configured with questions yet.
         </p>
+      </div>
+    );
+  }
+
+  if (block.alreadyCompleted && !result) {
+    return (
+      <div className="overflow-hidden rounded-xl border border-surface-border bg-surface-card shadow-card">
+        <div className="flex items-center justify-between bg-charcoal px-4 py-3">
+          <div className="flex items-center gap-2 text-white">
+            <HelpCircle className="h-4 w-4 text-accent" />
+            <h3 className="text-sm font-bold">{label}</h3>
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-2 p-6 text-center">
+          <CheckCircle2 className="h-6 w-6 text-status-success" />
+          <p className="text-xs font-semibold text-ink">Already completed</p>
+          <p className="text-[11px] text-ink-muted">This check can only be taken once.</p>
+        </div>
       </div>
     );
   }
@@ -213,7 +233,12 @@ const QuizBlock: React.FC<{ lessonId: string; block: LearnerBlock; label: string
   );
 };
 
-function renderBlock(lessonId: string, block: LearnerBlock, onQuizPassed: () => void): React.ReactNode {
+function renderBlock(
+  lessonId: string,
+  block: LearnerBlock,
+  onQuizPassed: () => void,
+  footer: React.ReactNode,
+): React.ReactNode {
   const c = block.content as Record<string, unknown>;
 
   switch (block.type) {
@@ -221,58 +246,79 @@ function renderBlock(lessonId: string, block: LearnerBlock, onQuizPassed: () => 
       return null; // folded into the page-level hero header instead
     case 'VIDEO': {
       const videoUrl = c.videoUrl ? String(c.videoUrl) : '';
+      const embedUrl = videoUrl ? getVideoEmbedUrl(videoUrl) : null;
       return (
-        <div>
-          {videoUrl ? (
-            <video src={videoUrl} controls className="aspect-video w-full rounded-xl bg-charcoal shadow-card" />
+        <div className="overflow-hidden rounded-xl border border-surface-border bg-surface-card p-4 shadow-card">
+          {embedUrl ? (
+            <iframe
+              src={embedUrl}
+              className="aspect-video w-full rounded-lg bg-charcoal"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : videoUrl ? (
+            <video src={videoUrl} controls className="aspect-video w-full rounded-lg bg-charcoal" />
           ) : (
-            <div className="flex aspect-video items-center justify-center rounded-xl bg-charcoal text-white/60 shadow-card">
+            <div className="flex aspect-video items-center justify-center rounded-lg bg-charcoal text-white/60">
               <Play className="h-8 w-8" />
             </div>
           )}
+          {footer}
         </div>
       );
     }
     case 'IMAGES': {
       const images = (c.images as { url: string; caption?: string }[]) ?? [];
       return (
-        <div className="grid grid-cols-2 gap-4">
-          {images.map((img, i) => (
-            <div key={i} className="overflow-hidden rounded-xl border border-surface-border shadow-card">
-              <BlockImage url={img.url} className="aspect-video w-full" />
-              {img.caption && (
-                <p className="border-t border-surface-border bg-surface-card px-2.5 py-1.5 text-[11px] font-medium text-ink-muted">
-                  {img.caption}
-                </p>
-              )}
-            </div>
-          ))}
+        <div className="rounded-xl border border-surface-border bg-surface-card p-4 shadow-card">
+          <div className="grid grid-cols-2 gap-4">
+            {images.map((img, i) => (
+              <div key={i} className="overflow-hidden rounded-lg border border-surface-border">
+                <BlockImage url={img.url} className="aspect-video w-full" />
+                {img.caption && (
+                  <p className="border-t border-surface-border bg-surface-card px-2.5 py-1.5 text-[11px] font-medium text-ink-muted">
+                    {img.caption}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+          {footer}
         </div>
       );
     }
     case 'BANNER_IMAGE':
-      // Fixed aspect ratio (not a fixed height) so the crop stays the same
-      // 4:1 regardless of viewport width — a fixed height with fluid width
-      // makes narrower screens crop harder than wide ones for the same image.
+      // object-contain, not cover: this block is used for infographics and
+      // diagrams with edge-to-edge information as often as decorative
+      // photos, and no single fixed aspect ratio matches every upload — a
+      // wide diagram would otherwise get its edges cropped off to fill the
+      // box. contain always shows the full image, letterboxed on a neutral
+      // background instead of zooming/cropping.
       return (
-        <BlockImage
-          url={c.imageUrl ? String(c.imageUrl) : undefined}
-          className="aspect-[4/1] w-full rounded-xl border border-surface-border shadow-card"
-        />
+        <div className="rounded-xl border border-surface-border bg-surface-card p-4 shadow-card">
+          <BlockImage
+            url={c.imageUrl ? String(c.imageUrl) : undefined}
+            className="aspect-[5/2] w-full rounded-lg bg-surface object-contain"
+          />
+          {footer}
+        </div>
       );
     case 'PDF':
       return (
-        <a
-          href={c.fileUrl ? String(c.fileUrl) : '#'}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-3 rounded-xl border border-surface-border bg-surface-card p-4 shadow-card transition hover:border-accent"
-        >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10">
-            <FileText className="h-4.5 w-4.5 text-accent" />
-          </div>
-          <span className="text-xs font-semibold text-ink">{String(c.fileName ?? 'document.pdf')}</span>
-        </a>
+        <div className="rounded-xl border border-surface-border bg-surface-card p-4 shadow-card">
+          <a
+            href={c.fileUrl ? String(c.fileUrl) : '#'}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-3 rounded-lg border border-surface-border p-3 transition hover:border-accent"
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent/10">
+              <FileText className="h-4.5 w-4.5 text-accent" />
+            </div>
+            <span className="text-xs font-semibold text-ink">{String(c.fileName ?? 'document.pdf')}</span>
+          </a>
+          {footer}
+        </div>
       );
     case 'RICH_TEXT':
       return (
@@ -280,6 +326,7 @@ function renderBlock(lessonId: string, block: LearnerBlock, onQuizPassed: () => 
           <p className="whitespace-pre-line text-sm leading-relaxed text-ink-muted">
             {renderFormattedText(String(c.html ?? ''))}
           </p>
+          {footer}
         </div>
       );
     case 'CALLOUT':
@@ -289,32 +336,31 @@ function renderBlock(lessonId: string, block: LearnerBlock, onQuizPassed: () => 
           <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-ink-muted">
             {renderFormattedText(String(c.message ?? ''))}
           </p>
+          {footer}
         </div>
       );
     case 'IMAGE_TEXT': {
       const image = (c.image as { url?: string }) ?? {};
       const position = c.imagePosition === 'right' ? 'right' : 'left';
       return (
-        // Mobile-first: stacked (image on top, text below) by default —
-        // stretching a small image to match a long block of text looked
-        // broken on narrow screens. At sm: (640px+) it switches to a real
-        // side-by-side card with a fixed-size thumbnail, honoring left/right.
-        <div
-          className={clsx(
-            'flex flex-col gap-4 rounded-xl border border-surface-border bg-surface-card p-4 shadow-card sm:flex-row',
-            position === 'right' && 'sm:flex-row-reverse',
-          )}
-        >
-          <BlockImage
-            url={image.url}
-            className="aspect-video w-full shrink-0 rounded-lg sm:aspect-square sm:h-32 sm:w-32"
-          />
-          <div className="min-w-0">
-            <p className="text-sm font-bold text-ink">{String(c.title ?? '')}</p>
-            <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-ink-muted">
-              {renderFormattedText(String(c.description ?? ''))}
-            </p>
+        <div className="rounded-xl border border-surface-border bg-surface-card p-4 shadow-card">
+          {/* Mobile-first: stacked (image on top, text below) by default —
+              stretching a small image to match a long block of text looked
+              broken on narrow screens. At sm: (640px+) it switches to a real
+              side-by-side card with a fixed-size thumbnail, honoring left/right. */}
+          <div className={clsx('flex flex-col gap-4 sm:flex-row', position === 'right' && 'sm:flex-row-reverse')}>
+            <BlockImage
+              url={image.url}
+              className="aspect-video w-full shrink-0 rounded-lg sm:aspect-square sm:h-32 sm:w-32"
+            />
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-ink">{String(c.title ?? '')}</p>
+              <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-ink-muted">
+                {renderFormattedText(String(c.description ?? ''))}
+              </p>
+            </div>
           </div>
+          {footer}
         </div>
       );
     }
@@ -328,6 +374,21 @@ function renderBlock(lessonId: string, block: LearnerBlock, onQuizPassed: () => 
       return null;
   }
 }
+
+const CompleteFooter: React.FC<{ isCompleted: boolean; onComplete: () => void }> = ({ isCompleted, onComplete }) =>
+  isCompleted ? (
+    <p className="mt-3 flex items-center gap-1.5 border-t border-surface-border pt-3 text-[11px] font-semibold text-status-success">
+      <CheckCircle2 className="h-3.5 w-3.5" /> Completed
+    </p>
+  ) : (
+    <button
+      onClick={onComplete}
+      className="mt-3 flex items-center gap-1.5 border-t border-surface-border pt-3 text-[11px] font-semibold text-ink-muted transition hover:text-accent"
+    >
+      <CheckCircle2 className="h-3.5 w-3.5" />
+      Mark Complete
+    </button>
+  );
 
 function heroImageFor(blocks: LearnerBlock[], course: LearnerCourseDetail | undefined): string | undefined {
   const bannerBlock = blocks.find((b) => b.type === 'HERO_BANNER');
@@ -362,7 +423,7 @@ export const LessonPlayerPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['learner-course', lesson?.courseId] });
       queryClient.invalidateQueries({ queryKey: ['learner-dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['learning-paths'] });
+      queryClient.invalidateQueries({ queryKey: ['learner-courses'] });
 
       const lessons = course?.lessons ?? [];
       const idx = lessons.findIndex((l) => l.lessonId === lessonId);
@@ -402,7 +463,7 @@ export const LessonPlayerPage: React.FC = () => {
   // complete button appears — this is what stops a learner from finishing
   // the lesson while blocks above are still locked/unread.
   const completableBlocks = sortedBlocks.filter((b) => b.type !== 'HERO_BANNER' && b.type !== 'NEXT_LESSON');
-  const allBlocksComplete = completableBlocks.every((b) => completedBlockIds.has(b.id));
+  const allBlocksComplete = completableBlocks.every((b) => Boolean(b.alreadyCompleted) || completedBlockIds.has(b.id));
 
   if (isLoading || !lesson) {
     return <p className="p-8 text-xs text-ink-faint">Loading lesson...</p>;
@@ -493,9 +554,6 @@ export const LessonPlayerPage: React.FC = () => {
 
         <div className="space-y-5">
           {sortedBlocks.map((block, i) => {
-            const rendered = renderBlock(lesson.lessonId, block, () => markBlockComplete(block.id));
-            if (!rendered) return null;
-
             const previousBlock = sortedBlocks[i - 1];
             // Locks only apply while first working through a lesson — once
             // it's already completed, the block-unlock state (session-only,
@@ -521,28 +579,20 @@ export const LessonPlayerPage: React.FC = () => {
               );
             }
 
-            const isCompleted = completedBlockIds.has(block.id);
+            // A KNOWLEDGE_CHECK/QUIZ block the learner already passed before
+            // this visit is done as far as the lesson-completion gate is
+            // concerned even though completedBlockIds (session-only) has no
+            // record of it — otherwise a reload would re-lock a passed check.
+            const isCompleted = Boolean(block.alreadyCompleted) || completedBlockIds.has(block.id);
             const showCompleteButton = !NO_MANUAL_COMPLETE.has(block.type);
+            const footer = showCompleteButton ? (
+              <CompleteFooter isCompleted={isCompleted} onComplete={() => markBlockComplete(block.id)} />
+            ) : null;
 
-            return (
-              <div key={block.id}>
-                {rendered}
-                {showCompleteButton && !isCompleted && (
-                  <button
-                    onClick={() => markBlockComplete(block.id)}
-                    className="mt-2 flex items-center gap-1.5 rounded-md border border-surface-border px-3 py-1.5 text-[11px] font-semibold text-ink-muted transition hover:border-accent hover:text-accent"
-                  >
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    Mark Complete
-                  </button>
-                )}
-                {showCompleteButton && isCompleted && (
-                  <p className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-status-success">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Completed
-                  </p>
-                )}
-              </div>
-            );
+            const rendered = renderBlock(lesson.lessonId, block, () => markBlockComplete(block.id), footer);
+            if (!rendered) return null;
+
+            return <div key={block.id}>{rendered}</div>;
           })}
         </div>
 

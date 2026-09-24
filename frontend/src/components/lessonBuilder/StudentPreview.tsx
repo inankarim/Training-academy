@@ -2,6 +2,7 @@ import React from 'react';
 import { Play, FileText, HelpCircle, ArrowRight, Image as ImageIcon } from 'lucide-react';
 import { LessonBlock } from '../../types/courseBuilder.types';
 import { renderFormattedText } from '../../utils/richTextFormat';
+import { getVideoEmbedUrl } from '../../utils/videoEmbed';
 
 function PreviewImage({ url, className }: { url?: string; className: string }) {
   if (!url) {
@@ -35,7 +36,15 @@ function renderBlock(block: LessonBlock): React.ReactNode {
     }
     case 'VIDEO': {
       const videoUrl = c.videoUrl ? String(c.videoUrl) : '';
-      return videoUrl ? (
+      const embedUrl = videoUrl ? getVideoEmbedUrl(videoUrl) : null;
+      return embedUrl ? (
+        <iframe
+          src={embedUrl}
+          className="aspect-video w-full rounded-lg bg-charcoal"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      ) : videoUrl ? (
         <video src={videoUrl} controls className="aspect-video w-full rounded-lg bg-charcoal" />
       ) : (
         <div className="flex aspect-video items-center justify-center rounded-lg bg-charcoal text-white/60">
