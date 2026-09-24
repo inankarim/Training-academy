@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { listUsersApi } from '../../services/users.service';
+import { listCoursesApi } from '../../services/courseBuilder.service';
+import { listAssignableCoursesApi } from '../../services/assignments.service';
 import {
   Users,
   UserPlus,
@@ -11,7 +13,7 @@ import {
   ArrowRight,
   TrendingUp,
   UserCheck,
-  Building,
+  BookOpen,
 } from 'lucide-react';
 
 export const StaffDashboard: React.FC = () => {
@@ -26,6 +28,37 @@ export const StaffDashboard: React.FC = () => {
 
   const totalUsers = usersData?.total ?? 0;
   const activeUsers = usersData?.items.filter((u) => u.status === 'active').length ?? 0;
+
+  // "Published Courses" is only real/queryable from roles with a course-listing
+  // endpoint: content_creator sees their own courses, hr sees every published
+  // course (the Assign Course picker). admin/super_admin have no such endpoint
+  // yet, so the tile shows a neutral "—" for them rather than a fabricated number.
+  const isContentCreator = user?.role === 'content_creator';
+  const isHr = user?.role === 'hr';
+
+  const { data: ownCourses, isLoading: ownCoursesLoading } = useQuery({
+    queryKey: ['content-creator-courses'],
+    queryFn: listCoursesApi,
+    enabled: isContentCreator,
+  });
+
+  const { data: assignableCourses, isLoading: assignableCoursesLoading } = useQuery({
+    queryKey: ['assignable-courses'],
+    queryFn: listAssignableCoursesApi,
+    enabled: isHr,
+  });
+
+  const publishedCoursesLoading = isContentCreator ? ownCoursesLoading : isHr ? assignableCoursesLoading : false;
+  const publishedCoursesCount = isContentCreator
+    ? ownCourses?.counts.published
+    : isHr
+    ? assignableCourses?.length
+    : undefined;
+  const publishedCoursesSubtext = isContentCreator
+    ? 'Published by you'
+    : isHr
+    ? 'Available to assign'
+    : 'Open Course Builder to view';
 
   return (
     <div className="space-y-8">
@@ -43,7 +76,7 @@ export const StaffDashboard: React.FC = () => {
               Welcome, {user?.fullName}
             </h1>
             <p className="mt-1 text-sm text-ink-muted">
-              You are logged in with {user?.role.toUpperCase()} privileges. Manage corporate users, track training progress, and configure learning modules.
+              You are logged in with {user?.role.toUpperCase()} privileges. Manage corporate users, track training progress, and configure courses.
             </p>
           </div>
 
@@ -103,14 +136,16 @@ export const StaffDashboard: React.FC = () => {
         <div className="rounded-lg border border-surface-border bg-surface-card p-5 shadow-card">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
-              Live Modules
+              Published Courses
             </span>
             <div className="rounded bg-blue-500/10 p-2 text-blue-700">
-              <Building className="h-4 w-4" />
+              <BookOpen className="h-4 w-4" />
             </div>
           </div>
-          <p className="mt-2 text-2xl font-bold text-ink">4</p>
-          <p className="mt-1 text-xs text-ink-muted">Know Your Holcim, Techno, ONE APP, Products</p>
+          <p className="mt-2 text-2xl font-bold text-ink">
+            {publishedCoursesLoading ? '—' : publishedCoursesCount ?? '—'}
+          </p>
+          <p className="mt-1 text-xs text-ink-muted">{publishedCoursesSubtext}</p>
         </div>
 
         <div className="rounded-lg border border-surface-border bg-surface-card p-5 shadow-card">
@@ -194,7 +229,7 @@ export const StaffDashboard: React.FC = () => {
                   {user?.role === 'hr'
                     ? 'HR role: Authorized to create and manage learner accounts, monitor progress, and review analytics.'
                     : user?.role === 'admin'
-                    ? 'Admin role: Authorized to manage training modules, quizzes, assignments, and learner accounts.'
+                    ? 'Admin role: Authorized to manage courses, quizzes, assignments, and learner accounts.'
                     : 'Super Admin role: Unrestricted system authority across infrastructure, roles, and staff accounts.'}
                 </p>
               </div>
