@@ -28,7 +28,12 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
     res.cookie(REFRESH_COOKIE_NAME, result.refreshTokenValue, refreshCookieOptions(result.refreshTokenExpiresAt));
     res.json({
       success: true,
-      data: { accessToken: result.accessToken, user: result.user, permissions: result.permissions },
+      data: {
+        accessToken: result.accessToken,
+        user: result.user,
+        permissions: result.permissions,
+        isFirstLogin: result.isFirstLogin,
+      },
     });
   } catch (err) {
     next(err);

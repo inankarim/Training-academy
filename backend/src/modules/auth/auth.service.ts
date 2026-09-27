@@ -30,12 +30,13 @@ interface AuthResult {
   refreshTokenExpiresAt: Date;
   user: AuthenticatedUserDTO;
   permissions: string[];
+  isFirstLogin: boolean;
 }
 
 async function issueSession(
   user: authRepo.UserRecord,
   ctx: ClientContext,
-): Promise<Omit<AuthResult, 'user' | 'permissions'>> {
+): Promise<Omit<AuthResult, 'user' | 'permissions' | 'isFirstLogin'>> {
   const accessToken = generateAccessToken(user.id, user.role_name);
   const refreshTokenValue = generateRefreshTokenValue();
   const refreshTokenExpiresAt = new Date(Date.now() + parseDurationMs(env.jwt.refreshExpiresIn));
@@ -88,6 +89,8 @@ export async function login(email: string, password: string, ctx: ClientContext)
     throw new AppError('This account has been deactivated. Contact your administrator.', 403);
   }
 
+  const isFirstLogin = user.last_login_at === null;
+
   await clearFailedLogins(email);
   await authRepo.updateLastLogin(user.id);
 
@@ -101,7 +104,7 @@ export async function login(email: string, password: string, ctx: ClientContext)
     userAgent: ctx.userAgent,
   });
 
-  return { ...session, user: toDTO(user), permissions };
+  return { ...session, user: toDTO(user), permissions, isFirstLogin };
 }
 
 export async function refresh(refreshTokenValue: string, ctx: ClientContext): Promise<AuthResult> {
@@ -124,7 +127,7 @@ export async function refresh(refreshTokenValue: string, ctx: ClientContext): Pr
   const session = await issueSession(user, ctx);
   const permissions = await getPermissionsForRole(user.role_name);
 
-  return { ...session, user: toDTO(user), permissions };
+  return { ...session, user: toDTO(user), permissions, isFirstLogin: false };
 }
 
 export async function logout(refreshTokenValue: string | undefined, ctx: ClientContext): Promise<void> {
