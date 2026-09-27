@@ -79,6 +79,24 @@ export async function deleteAssignment(id: string): Promise<void> {
   await getPool().query('DELETE FROM course_assignments WHERE id = $1', [id]);
 }
 
+/** Assignments whose due date has lapsed but haven't been flagged overdue yet. */
+export async function findLapsedAssignments(): Promise<AssignmentRecord[]> {
+  const { rows } = await getPool().query<AssignmentRecord>(
+    `${ASSIGNMENT_SELECT}
+     WHERE status IN ('assigned', 'in_progress')
+       AND due_date < CURRENT_DATE
+       AND overdue_notified_at IS NULL`,
+  );
+  return rows;
+}
+
+export async function markOverdueNotified(id: string): Promise<void> {
+  await getPool().query(
+    `UPDATE course_assignments SET status = 'overdue', overdue_notified_at = now() WHERE id = $1`,
+    [id],
+  );
+}
+
 /** Distinct course_ids a learner has ANY assignment for — the visibility gate. */
 export async function findAssignedCourseIdsForLearner(userId: string): Promise<string[]> {
   const { rows } = await getPool().query<{ course_id: string }>(

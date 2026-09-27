@@ -4,6 +4,7 @@ import { logger } from './utils/logger';
 import { connectMongo, disconnectMongo } from './database/mongo';
 import { connectPostgres, disconnectPostgres } from './database/postgres';
 import { connectRedis, disconnectRedis } from './database/redis';
+import { startOverdueSweepScheduler } from './modules/assignments/assignments.service';
 
 // Catch anything that escapes Express's own error handling.
 process.on('uncaughtException', (err) => {
@@ -27,6 +28,8 @@ async function bootstrap() {
   const server = app.listen(env.port, () => {
     logger.info(`${env.appName} listening on port ${env.port} [${env.nodeEnv}]`);
   });
+
+  startOverdueSweepScheduler();
 
   function gracefulShutdown(signal: string) {
     logger.info(`${signal} received: closing server gracefully`);

@@ -4,6 +4,7 @@ import * as assignmentsRepo from './assignments.postgres.repository';
 import * as coursesRepo from '../courses/courses.postgres.repository';
 import * as lessonsRepo from '../lessons/lessons.postgres.repository';
 import * as usersRepo from '../users/users.repository';
+import * as notificationsService from '../notifications/notifications.service';
 import { AssignmentDTO, AssignmentRecord, CreateAssignmentInput, AssignmentFilters, RequesterContext, AssignableCourseDTO } from './assignments.types';
 import { ClientContext } from '../auth/auth.types';
 
@@ -109,4 +110,39 @@ export async function deleteAssignment(
     ipAddress: ctx.ip,
     userAgent: ctx.userAgent,
   });
+}
+
+/**
+ * Flips lapsed assignments to 'overdue' and notifies hr/admin/super_admin,
+ * exactly once per assignment (overdue_notified_at is the idempotency
+ * guard). Exported standalone so it's callable directly for verification
+ * without waiting on the interval in server.ts.
+ */
+export async function sweepOverdueAssignments(): Promise<number> {
+  const lapsed = await assignmentsRepo.findLapsedAssignments();
+  for (const assignment of lapsed) {
+    await assignmentsRepo.markOverdueNotified(assignment.id);
+    const [course, learner] = await Promise.all([
+      coursesRepo.findCourseById(assignment.course_id),
+      usersRepo.findUserById(assignment.assigned_to),
+    ]);
+    await notificationsService.notifyAssignmentOverdue({
+      learnerId: assignment.assigned_to,
+      learnerName: learner?.full_name ?? 'Unknown learner',
+      courseId: assignment.course_id,
+      courseName: course?.name ?? 'Unknown course',
+    });
+  }
+  return lapsed.length;
+}
+
+let sweepInterval: NodeJS.Timeout | null = null;
+
+/** Called once from server.ts after startup. Runs immediately (covers due dates that lapsed while the server was down), then every 15 minutes. */
+export function startOverdueSweepScheduler(): void {
+  if (sweepInterval) return;
+  void sweepOverdueAssignments();
+  sweepInterval = setInterval(() => {
+    void sweepOverdueAssignments();
+  }, 15 * 60 * 1000);
 }
