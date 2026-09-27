@@ -36,6 +36,9 @@ async function assertAssignment(userId: string, courseId: string) {
   if (!assignment) {
     throw new AppError('This course has not been assigned to you.', 403);
   }
+  if (assignment.status === 'overdue') {
+    throw new AppError('This course is locked because its due date has passed. Contact HR to extend the deadline.', 423);
+  }
   return assignment;
 }
 
