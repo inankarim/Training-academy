@@ -6,6 +6,7 @@ import * as mongoRepo from './courses.mongo.repository';
 import * as courseModulesRepo from '../lessons/courseModules.postgres.repository';
 import { countLessonsForCourse, findLessonsByCourse } from '../lessons/lessons.postgres.repository';
 import { findLessonContentByLessonId } from '../lessons/lessons.mongo.repository';
+import * as notificationsService from '../notifications/notifications.service';
 import {
   CourseDTO,
   CourseRecord,
@@ -279,6 +280,10 @@ export async function changeCourseStatus(
   }
 
   await pgRepo.setCourseStatus(courseId, status);
+
+  if (status === 'published') {
+    await notificationsService.notifyCoursePublished({ id: course.id, name: course.name }, requester.id);
+  }
 
   await writeAuditLog({
     actorUserId: requester.id,
