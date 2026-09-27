@@ -7,7 +7,8 @@ interface AuthState {
   permissions: string[];
   isAuthenticated: boolean;
   isInitializing: boolean;
-  setAuth: (payload: { user: AuthenticatedUser; accessToken: string; permissions: string[] }) => void;
+  isFirstLogin: boolean;
+  setAuth: (payload: { user: AuthenticatedUser; accessToken: string; permissions: string[]; isFirstLogin?: boolean }) => void;
   setAccessToken: (token: string) => void;
   updateUser: (patch: Partial<AuthenticatedUser>) => void;
   clearAuth: () => void;
@@ -20,14 +21,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   permissions: [],
   isAuthenticated: false,
   isInitializing: true,
+  isFirstLogin: false,
 
-  setAuth: ({ user, accessToken, permissions }) =>
+  setAuth: ({ user, accessToken, permissions, isFirstLogin }) =>
     set({
       user,
       accessToken,
       permissions,
       isAuthenticated: true,
       isInitializing: false,
+      isFirstLogin: isFirstLogin ?? false,
     }),
 
   setAccessToken: (accessToken) => set({ accessToken }),
@@ -44,6 +47,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       permissions: [],
       isAuthenticated: false,
       isInitializing: false,
+      isFirstLogin: false,
     }),
 
   setInitializing: (val) => set({ isInitializing: val }),

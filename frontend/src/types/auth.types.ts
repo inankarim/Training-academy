@@ -14,6 +14,7 @@ export interface AuthResponseData {
   accessToken: string;
   user: AuthenticatedUser;
   permissions: string[];
+  isFirstLogin?: boolean;
 }
 
 export interface ApiResponse<T> {
