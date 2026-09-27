@@ -62,6 +62,8 @@ export interface LessonSummaryDTO {
 export interface LessonDetailDTO extends LessonSummaryDTO {
   blocks: LessonBlockDTO[];
   contentVersion: number;
+  /** Draft content differs from the live version learners see. */
+  hasUnpublishedChanges: boolean;
 }
 
 export interface CreateLessonInput {

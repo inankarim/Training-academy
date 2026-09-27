@@ -4,8 +4,9 @@ import { logger } from '../../utils/logger';
 import * as pgRepo from './courses.postgres.repository';
 import * as mongoRepo from './courses.mongo.repository';
 import * as courseModulesRepo from '../lessons/courseModules.postgres.repository';
-import { countLessonsForCourse, findLessonsByCourse } from '../lessons/lessons.postgres.repository';
+import { countLessonsForCourse, findPublishedLessonsByCourse } from '../lessons/lessons.postgres.repository';
 import { findLessonContentByLessonId } from '../lessons/lessons.mongo.repository';
+import { lessonHasGradedCheck } from '../lessons/lessons.service';
 import * as notificationsService from '../notifications/notifications.service';
 import {
   CourseDTO,
@@ -226,26 +227,22 @@ export async function archiveCourse(
 }
 
 /**
- * Every lesson needs at least one graded check before a course can go live —
- * a learner must never be able to complete a published lesson with nothing
- * to answer. Checked here (not at lesson-save time) so drafting stays free-form.
+ * A course needs at least one published lesson to go live, and every
+ * published lesson's live content needs a graded check — a learner must never
+ * be able to complete a lesson with nothing to answer. Draft lessons are
+ * ignored: they're invisible to learners until published individually.
  */
 async function assertLessonsReadyForPublish(courseId: string): Promise<void> {
-  const lessons = await findLessonsByCourse(courseId);
+  const lessons = await findPublishedLessonsByCourse(courseId);
   if (lessons.length === 0) {
-    throw new AppError('Add at least one lesson before publishing this course.', 400);
+    throw new AppError('Publish at least one lesson before publishing this course.', 400);
   }
 
   const missing: string[] = [];
   for (const lesson of lessons) {
     const content = await findLessonContentByLessonId(lesson.id);
-    const blocks = content?.blocks ?? [];
-    const hasGradedCheck = blocks.some((b) => {
-      if (b.type !== 'KNOWLEDGE_CHECK' && b.type !== 'QUIZ') return false;
-      const questions = (b.content as Record<string, unknown>)?.questions as unknown[] | undefined;
-      return Array.isArray(questions) && questions.length > 0;
-    });
-    if (!hasGradedCheck) {
+    const liveBlocks = content?.publishedBlocks.map((b) => b.toObject()) ?? [];
+    if (!lessonHasGradedCheck(liveBlocks)) {
       missing.push(lesson.title);
     }
   }

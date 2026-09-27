@@ -89,7 +89,11 @@ export async function listProgressForAssignment(assignmentId: string): Promise<L
 
 export async function countCompletedLessons(assignmentId: string): Promise<number> {
   const { rows } = await getPool().query<{ count: number }>(
-    "SELECT COUNT(*)::int AS count FROM learner_lesson_progress WHERE assignment_id = $1 AND status = 'completed'",
+    // Only lessons learners can currently see count toward course completion.
+    `SELECT COUNT(*)::int AS count
+     FROM learner_lesson_progress p
+     JOIN lessons l ON l.id = p.lesson_id AND l.status = 'published'
+     WHERE p.assignment_id = $1 AND p.status = 'completed'`,
     [assignmentId],
   );
   return rows[0]?.count ?? 0;

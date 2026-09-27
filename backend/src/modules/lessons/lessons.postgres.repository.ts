@@ -44,6 +44,15 @@ export async function findLessonsByCourse(courseId: string): Promise<LessonRecor
   return rows;
 }
 
+/** Learner-visible lessons only — draft lessons stay hidden until the content creator publishes them. */
+export async function findPublishedLessonsByCourse(courseId: string): Promise<LessonRecord[]> {
+  const { rows } = await getPool().query<LessonRecord>(
+    `${LESSON_SELECT} WHERE course_id = $1 AND status = 'published' ORDER BY sort_order ASC`,
+    [courseId],
+  );
+  return rows;
+}
+
 export async function getNextLessonSortOrder(moduleId: string): Promise<number> {
   const { rows } = await getPool().query<{ max: number | null }>(
     'SELECT MAX(sort_order) AS max FROM lessons WHERE module_id = $1',

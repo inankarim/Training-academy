@@ -14,7 +14,12 @@ export interface LessonContentDocument extends Document {
   lessonId: string; // = the owning Postgres lessons.id — canonical identity, never generated here
   courseId: string; // denormalized from Postgres for query convenience; Postgres stays authoritative
   moduleId: string;
+  // `blocks` is the working draft the Lesson Builder edits (auto-saved).
+  // `publishedBlocks` is the frozen live copy learners see and are graded
+  // against; it only changes when the content creator clicks Publish.
   blocks: Types.DocumentArray<LessonBlockSubdoc>;
+  publishedBlocks: Types.DocumentArray<LessonBlockSubdoc>;
+  publishedAt: Date | null;
   contentVersion: number;
   createdAt: Date;
   updatedAt: Date;
@@ -40,6 +45,8 @@ const LessonContentSchema = new Schema<LessonContentDocument>(
     courseId: { type: String, required: true, index: true },
     moduleId: { type: String, required: true, index: true },
     blocks: { type: [LessonBlockSchema], default: [] },
+    publishedBlocks: { type: [LessonBlockSchema], default: [] },
+    publishedAt: { type: Date, default: null },
     contentVersion: { type: Number, default: 1 },
   },
   // minimize: false — see courseContent.model.ts; without it Mongoose strips

@@ -81,7 +81,7 @@ export async function listAssignableCourses(): Promise<AssignableCourseDTO[]> {
       difficulty: c.difficulty,
       estimatedDuration: Number(c.estimated_duration),
       totalXpReward: c.total_xp_reward,
-      lessonCount: (await lessonsRepo.findLessonsByCourse(c.id)).length,
+      lessonCount: (await lessonsRepo.findPublishedLessonsByCourse(c.id)).length,
     })),
   );
 }

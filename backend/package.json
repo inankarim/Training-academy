@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "migrate:up": "ts-node src/database/migrate.ts up",
     "migrate:down": "ts-node src/database/migrate.ts down",
+    "backfill:published-lessons": "ts-node src/database/backfillPublishedLessons.ts",
     "seed": "ts-node src/database/seed.ts",
     "test": "jest"
   },

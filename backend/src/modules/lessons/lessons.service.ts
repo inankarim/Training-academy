@@ -303,7 +303,17 @@ export async function getLessonDetail(
     updatedAt: lesson.updated_at,
     blocks: content?.blocks.map((b) => b.toObject()) ?? [],
     contentVersion: content?.contentVersion ?? 1,
+    hasUnpublishedChanges: lessonsMongoRepo.hasUnpublishedChanges(content),
   };
+}
+
+/** A lesson is publishable only with a Knowledge Check or Quiz that has at least one question. */
+export function lessonHasGradedCheck(blocks: Array<{ type: string; content: unknown }>): boolean {
+  return blocks.some((b) => {
+    if (b.type !== 'KNOWLEDGE_CHECK' && b.type !== 'QUIZ') return false;
+    const questions = (b.content as Record<string, unknown> | undefined)?.questions;
+    return Array.isArray(questions) && questions.length > 0;
+  });
 }
 
 export async function updateLesson(
@@ -313,6 +323,18 @@ export async function updateLesson(
   ctx: ClientContext,
 ): Promise<LessonDetailDTO> {
   await loadOwnedLesson(requester, lessonId, ctx);
+
+  // Publishing snapshots the draft blocks as the live version learners see;
+  // it's the only path that changes learner-visible content.
+  if (input.status === 'published') {
+    const content = await lessonsMongoRepo.findLessonContentByLessonId(lessonId);
+    const draftBlocks = content?.blocks.map((b) => b.toObject()) ?? [];
+    if (!lessonHasGradedCheck(draftBlocks)) {
+      throw new AppError('Add a Knowledge Check or Quiz with at least one question before publishing this lesson.', 400);
+    }
+    await lessonsMongoRepo.publishLessonContent(lessonId);
+  }
+
   await lessonsRepo.updateLesson(lessonId, input);
 
   await writeAuditLog({

@@ -63,6 +63,8 @@ export interface LessonSummary {
 export interface LessonDetail extends LessonSummary {
   blocks: LessonBlock[];
   contentVersion: number;
+  /** Draft content differs from the live version learners see. */
+  hasUnpublishedChanges: boolean;
 }
 
 export type BlockCategory = 'MEDIA' | 'CONTENT' | 'ASSESSMENT' | 'LESSON_FLOW';

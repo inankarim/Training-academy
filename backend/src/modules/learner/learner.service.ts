@@ -45,7 +45,7 @@ async function assertAssignment(userId: string, courseId: string) {
 async function courseProgress(userId: string, courseId: string) {
   const assignment = await learnerRepo.findLatestAssignmentForLearnerCourse(userId, courseId);
   if (!assignment) return null;
-  const lessons = await lessonsRepo.findLessonsByCourse(courseId);
+  const lessons = await lessonsRepo.findPublishedLessonsByCourse(courseId);
   const completed = await learnerRepo.countCompletedLessons(assignment.id);
   const total = lessons.length;
   return {
@@ -94,13 +94,16 @@ export async function getCourseForLearner(
 
   const [modules, lessons, progressRows] = await Promise.all([
     courseModulesRepo.findModulesByCourse(courseId),
-    lessonsRepo.findLessonsByCourse(courseId),
+    lessonsRepo.findPublishedLessonsByCourse(courseId),
     learnerRepo.listProgressForAssignment(assignment.id),
   ]);
 
   const moduleTitleById = new Map(modules.map((m) => [m.id, m.title]));
   const progressByLesson = new Map(progressRows.map((p) => [p.lesson_id, p.status]));
-  const completedLessonCount = progressRows.filter((p) => p.status === 'completed').length;
+  const visibleLessonIds = new Set(lessons.map((l) => l.id));
+  const completedLessonCount = progressRows.filter(
+    (p) => p.status === 'completed' && visibleLessonIds.has(p.lesson_id),
+  ).length;
 
   return {
     courseId: course.id,
@@ -132,7 +135,7 @@ export async function getLessonForLearner(
   lessonId: string,
 ): Promise<LearnerLessonDetailDTO> {
   const lesson = await lessonsRepo.findLessonById(lessonId);
-  if (!lesson) throw new AppError('Lesson not found.', 404);
+  if (!lesson || lesson.status !== 'published') throw new AppError('Lesson not found.', 404);
 
   const assignment = await assertAssignment(requester.id, lesson.course_id);
 
@@ -146,7 +149,7 @@ export async function getLessonForLearner(
   const progressRows = await learnerRepo.listProgressForAssignment(assignment.id);
   const status = progressRows.find((p) => p.lesson_id === lessonId)?.status ?? 'in_progress';
 
-  const rawBlocks = (content?.blocks ?? [])
+  const rawBlocks = (content?.publishedBlocks ?? [])
     .map((b) => b.toObject())
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -190,7 +193,7 @@ export async function completeLesson(
   ctx: ClientContext,
 ): Promise<void> {
   const lesson = await lessonsRepo.findLessonById(lessonId);
-  if (!lesson) throw new AppError('Lesson not found.', 404);
+  if (!lesson || lesson.status !== 'published') throw new AppError('Lesson not found.', 404);
 
   const assignment = await assertAssignment(requester.id, lesson.course_id);
 
@@ -208,7 +211,7 @@ export async function completeLesson(
   });
 
   const [lessons, completedCount] = await Promise.all([
-    lessonsRepo.findLessonsByCourse(lesson.course_id),
+    lessonsRepo.findPublishedLessonsByCourse(lesson.course_id),
     learnerRepo.countCompletedLessons(assignment.id),
   ]);
 
@@ -241,11 +244,11 @@ export async function submitBlockAttempt(
   ctx: ClientContext,
 ): Promise<BlockAttemptResultDTO> {
   const lesson = await lessonsRepo.findLessonById(lessonId);
-  if (!lesson) throw new AppError('Lesson not found.', 404);
+  if (!lesson || lesson.status !== 'published') throw new AppError('Lesson not found.', 404);
   await assertAssignment(requester.id, lesson.course_id);
 
   const content = await lessonsMongoRepo.findLessonContentByLessonId(lessonId);
-  const block = content?.blocks.find((b) => b.id === blockId);
+  const block = content?.publishedBlocks.find((b) => b.id === blockId);
   if (!block) throw new AppError('Block not found.', 404);
   if (block.type !== 'KNOWLEDGE_CHECK' && block.type !== 'QUIZ') {
     throw new AppError('This block does not accept answer submissions.', 400);

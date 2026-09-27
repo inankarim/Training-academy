@@ -17,6 +17,28 @@ function toPlainBlocks(doc: LessonContentDocument): LessonBlockSubdoc[] {
   return doc.blocks.map((b) => b.toObject());
 }
 
+/** Snapshot the current draft as the live version learners see. */
+export async function publishLessonContent(lessonId: string): Promise<void> {
+  const doc = await LessonContentModel.findOne({ lessonId }).exec();
+  if (!doc) throw new Error('Lesson content not found.');
+  doc.publishedBlocks = toPlainBlocks(doc) as unknown as typeof doc.publishedBlocks;
+  doc.publishedAt = new Date();
+  await doc.save();
+}
+
+function comparable(blocks: LessonBlockSubdoc[]): string {
+  return JSON.stringify(
+    blocks.map((b) => ({ id: b.id, type: b.type, sortOrder: b.sortOrder, content: b.content, style: b.style })),
+  );
+}
+
+/** True when the draft differs from what learners currently see (or it was never published). */
+export function hasUnpublishedChanges(doc: LessonContentDocument | null): boolean {
+  if (!doc) return false;
+  if (!doc.publishedAt) return doc.blocks.length > 0;
+  return comparable(toPlainBlocks(doc)) !== comparable(doc.publishedBlocks.map((b) => b.toObject()));
+}
+
 /** Rewrites sortOrder to 1..n based on current array order — called after every mutation. */
 function normalizeSortOrder(blocks: LessonBlockSubdoc[]): LessonBlockSubdoc[] {
   return blocks.map((b, index) => ({ ...b, sortOrder: index + 1 }));
