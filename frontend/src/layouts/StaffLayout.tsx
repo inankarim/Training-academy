@@ -12,6 +12,7 @@ import {
   Shield,
   BookOpen,
   ClipboardList,
+  Bell,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -27,6 +28,7 @@ export const StaffLayout: React.FC = () => {
   // Assignments is exclusively for hr on the backend (see assignments.routes.ts's requireHrRole).
   const isHr = user?.role === 'hr';
   const canSeeNotifications = ['hr', 'admin', 'super_admin'].includes(user?.role ?? '');
+  const canComposeMessages = user?.role === 'admin' || user?.role === 'super_admin';
 
   return (
     <div className="flex min-h-screen bg-surface font-sans text-ink">
@@ -140,6 +142,23 @@ export const StaffLayout: React.FC = () => {
             >
               <UserPlus className="h-4 w-4 text-accent" />
               Add New User
+            </NavLink>
+          )}
+
+          {canComposeMessages && (
+            <NavLink
+              to="/staff/notifications"
+              className={({ isActive }) =>
+                clsx(
+                  'flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition',
+                  isActive
+                    ? 'bg-charcoal-soft font-semibold text-white shadow-sm'
+                    : 'text-white/70 hover:bg-charcoal-soft/50 hover:text-white',
+                )
+              }
+            >
+              <Bell className="h-4 w-4 text-accent" />
+              Notifications
             </NavLink>
           )}
 
