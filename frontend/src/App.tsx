@@ -33,6 +33,7 @@ const AssignmentsPage = lazyImport(() => import('./pages/staff/AssignmentsPage')
 const CoursesPage = lazyImport(() => import('./pages/learner/CoursesPage'), 'CoursesPage');
 const CourseOverviewPage = lazyImport(() => import('./pages/learner/CourseOverviewPage'), 'CourseOverviewPage');
 const LessonPlayerPage = lazyImport(() => import('./pages/learner/LessonPlayerPage'), 'LessonPlayerPage');
+const NotificationsPage = lazyImport(() => import('./pages/shared/NotificationsPage'), 'NotificationsPage');
 
 function RouteFallback() {
   return (
@@ -155,6 +156,7 @@ export function App() {
               <Route path="courses" element={<CoursesPage />} />
               <Route path="courses/:courseId" element={<CourseOverviewPage />} />
               <Route path="lessons/:lessonId" element={<LessonPlayerPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
             </Route>
   
             {/* Staff & HR Management Routes */}
@@ -228,6 +230,14 @@ export function App() {
                 element={
                   <ProtectedRoute allowedRoles={['hr']} redirectToLoginPath="/staff/login">
                     <AssignmentsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="notifications"
+                element={
+                  <ProtectedRoute allowedRoles={['hr', 'admin', 'super_admin']} redirectToLoginPath="/staff/login">
+                    <NotificationsPage />
                   </ProtectedRoute>
                 }
               />
