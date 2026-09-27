@@ -119,6 +119,14 @@ export async function insertUser(data: {
   return created;
 }
 
+/** Every active learner's id — feeds "send this notification to all learners." */
+export async function findActiveLearnerIds(): Promise<string[]> {
+  const { rows } = await getPool().query<{ id: string }>(
+    `SELECT u.id FROM users u JOIN roles r ON r.id = u.role_id WHERE r.name = 'learner' AND u.status = 'active'`,
+  );
+  return rows.map((r) => r.id);
+}
+
 export async function listUsers(
   filters: UserFilterParams,
   pagination: PaginationParams,

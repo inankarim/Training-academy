@@ -8,6 +8,7 @@ import { courseModulesRouter, lessonsRouter, lessonBuilderRouter } from '../modu
 import { uploadsRouter } from '../modules/uploads/uploads.routes';
 import { assignmentsRouter } from '../modules/assignments/assignments.routes';
 import { learnerRouter } from '../modules/learner/learner.routes';
+import { notificationsRouter } from '../modules/notifications/notifications.routes';
 
 // Every module's router gets mounted here, and only here. app.ts mounts
 // this single router under /api/{version} — it never talks to individual
@@ -35,6 +36,7 @@ apiRouter.use('/content-creator/lesson-builder', lessonBuilderRouter);
 apiRouter.use('/content-creator/uploads', uploadsRouter);
 apiRouter.use('/hr/assignments', assignmentsRouter);
 apiRouter.use('/learner', learnerRouter);
+apiRouter.use('/notifications', notificationsRouter);
 
 // Future modules mount here, e.g.:
 // apiRouter.use('/hr', hrRouter);
