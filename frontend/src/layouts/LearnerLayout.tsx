@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { getLearnerDashboardApi } from '../services/learner.service';
 import { ThemeToggle } from '../components/shared/ThemeToggle';
+import { NotificationBell } from '../components/shared/NotificationBell';
 import {
   BookOpen,
   Award,
@@ -116,6 +117,8 @@ export const LearnerLayout: React.FC = () => {
                 Staff View
               </button>
             )}
+
+            <NotificationBell notificationsPath="/learner/notifications" />
 
             <ThemeToggle variant="light-chrome" />
 

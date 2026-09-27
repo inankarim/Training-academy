@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { ThemeToggle } from '../components/shared/ThemeToggle';
+import { NotificationBell } from '../components/shared/NotificationBell';
 import {
   LayoutDashboard,
   Users,
@@ -25,6 +26,7 @@ export const StaffLayout: React.FC = () => {
   const isContentCreator = user?.role === 'content_creator';
   // Assignments is exclusively for hr on the backend (see assignments.routes.ts's requireHrRole).
   const isHr = user?.role === 'hr';
+  const canSeeNotifications = ['hr', 'admin', 'super_admin'].includes(user?.role ?? '');
 
   return (
     <div className="flex min-h-screen bg-surface font-sans text-ink">
@@ -178,6 +180,7 @@ export const StaffLayout: React.FC = () => {
             </h1>
           </div>
           <div className="flex items-center gap-3">
+            {canSeeNotifications && <NotificationBell notificationsPath="/staff/notifications" />}
             <ThemeToggle variant="light-chrome" />
             <button
               onClick={() => navigate('/learner/dashboard')}
