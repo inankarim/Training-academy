@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import {
   getLearnerLessonApi,
   getLearnerCourseApi,
@@ -401,10 +402,11 @@ export const LessonPlayerPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: lesson, isLoading } = useQuery({
+  const { data: lesson, isLoading, error: lessonError } = useQuery({
     queryKey: ['learner-lesson', lessonId],
     queryFn: () => getLearnerLessonApi(lessonId!),
     enabled: Boolean(lessonId),
+    retry: false,
   });
 
   const { data: course } = useQuery({
@@ -464,6 +466,24 @@ export const LessonPlayerPage: React.FC = () => {
   // the lesson while blocks above are still locked/unread.
   const completableBlocks = sortedBlocks.filter((b) => b.type !== 'HERO_BANNER' && b.type !== 'NEXT_LESSON');
   const allBlocksComplete = completableBlocks.every((b) => Boolean(b.alreadyCompleted) || completedBlockIds.has(b.id));
+
+  if (axios.isAxiosError(lessonError) && lessonError.response?.status === 423) {
+    return (
+      <div className="mx-auto max-w-lg rounded-lg border border-status-warning/30 bg-status-warningSubtle p-6 text-center">
+        <p className="text-sm font-bold text-status-warning">This course is locked</p>
+        <p className="mt-1 text-xs text-ink-muted">
+          {(lessonError.response.data as { error?: { message?: string } })?.error?.message ||
+            'Its due date has passed. Contact HR to extend your deadline.'}
+        </p>
+        <button
+          onClick={() => navigate('/learner/courses')}
+          className="mt-3 text-xs font-semibold text-accent hover:text-accent-hover"
+        >
+          Back to My Courses
+        </button>
+      </div>
+    );
+  }
 
   if (isLoading || !lesson) {
     return <p className="p-8 text-xs text-ink-faint">Loading lesson...</p>;

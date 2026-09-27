@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import { getLearnerCourseApi } from '../../services/learner.service';
 import { ChevronLeft, CheckCircle2, PlayCircle, Circle, Clock, Zap } from 'lucide-react';
 import clsx from 'clsx';
@@ -9,11 +10,27 @@ export const CourseOverviewPage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const navigate = useNavigate();
 
-  const { data: course, isLoading } = useQuery({
+  const { data: course, isLoading, error } = useQuery({
     queryKey: ['learner-course', courseId],
     queryFn: () => getLearnerCourseApi(courseId!),
     enabled: Boolean(courseId),
+    retry: false,
   });
+
+  if (axios.isAxiosError(error) && error.response?.status === 423) {
+    return (
+      <div className="rounded-lg border border-status-warning/30 bg-status-warningSubtle p-6 text-center">
+        <p className="text-sm font-bold text-status-warning">This course is locked</p>
+        <p className="mt-1 text-xs text-ink-muted">
+          {(error.response.data as { error?: { message?: string } })?.error?.message ||
+            'Its due date has passed. Contact HR to extend your deadline.'}
+        </p>
+        <Link to="/learner/courses" className="mt-3 inline-block text-xs font-semibold text-accent hover:text-accent-hover">
+          Back to My Courses
+        </Link>
+      </div>
+    );
+  }
 
   if (isLoading || !course) {
     return <p className="text-xs text-ink-faint">Loading course...</p>;
