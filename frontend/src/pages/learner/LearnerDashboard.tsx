@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export const LearnerDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isFirstLogin } = useAuth();
   const navigate = useNavigate();
 
   const { data: dashboard } = useQuery({
@@ -49,7 +49,7 @@ export const LearnerDashboard: React.FC = () => {
               </span>
             </div>
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-ink">
-              Welcome back, {user?.fullName}!
+              {isFirstLogin ? 'Welcome to Holcim Academy!' : `Welcome back, ${user?.fullName}!`}
             </h1>
             <p className="mt-1 text-sm text-ink-muted">
               Role: <span className="font-semibold text-ink">{user?.role.toUpperCase()}</span>
