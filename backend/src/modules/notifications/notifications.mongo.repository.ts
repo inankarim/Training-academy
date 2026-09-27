@@ -7,6 +7,7 @@ function recipientFilter(recipient: RequesterContext) {
       { audienceType: 'role', audienceRole: recipient.role },
       { audienceType: 'user', audienceUserId: recipient.id },
     ],
+    deletedBy: { $ne: recipient.id },
   };
 }
 
@@ -91,6 +92,15 @@ export async function countUnreadForRecipient(recipient: RequesterContext): Prom
 
 export async function markRead(notificationId: string, userId: string): Promise<void> {
   await NotificationModel.updateOne({ _id: notificationId }, { $addToSet: { readBy: userId } }).exec();
+}
+
+/** Hides a notification for this recipient only; returns false if it isn't one of theirs. */
+export async function deleteForRecipient(notificationId: string, recipient: RequesterContext): Promise<boolean> {
+  const result = await NotificationModel.updateOne(
+    { _id: notificationId, ...recipientFilter(recipient) },
+    { $addToSet: { deletedBy: recipient.id } },
+  ).exec();
+  return result.matchedCount > 0;
 }
 
 export async function markAllReadForRecipient(recipient: RequesterContext): Promise<void> {

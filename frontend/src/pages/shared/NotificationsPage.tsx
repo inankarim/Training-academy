@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { Bell, X } from 'lucide-react';
+import { Bell, X, Trash2 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { listNotificationsApi, markNotificationReadApi, markAllNotificationsReadApi, sendCustomMessageApi } from '../../services/notifications.service';
+import {
+  listNotificationsApi,
+  markNotificationReadApi,
+  markAllNotificationsReadApi,
+  sendCustomMessageApi,
+  deleteNotificationApi,
+} from '../../services/notifications.service';
 import { listUsersApi } from '../../services/users.service';
 import clsx from 'clsx';
 
@@ -28,6 +34,15 @@ export const NotificationsPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications-page'] });
       queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteNotificationApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications-page'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications-recent'] });
     },
   });
 
@@ -80,9 +95,22 @@ export const NotificationsPage: React.FC = () => {
                 onClick={() => !n.isRead && markReadMutation.mutate(n.id)}
                 className={clsx('cursor-pointer px-5 py-4 hover:bg-surface/50', !n.isRead && 'bg-accent/5')}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <p className="text-xs font-bold text-ink">{n.title}</p>
-                  <span className="text-[11px] text-ink-faint">{formatDateTime(n.createdAt)}</span>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="text-[11px] text-ink-faint">{formatDateTime(n.createdAt)}</span>
+                    <button
+                      onClick={(e) => {
+                        // The row itself marks-as-read on click; don't trigger that too.
+                        e.stopPropagation();
+                        deleteMutation.mutate(n.id);
+                      }}
+                      title="Remove"
+                      className="rounded p-1 text-ink-faint hover:bg-status-dangerSubtle hover:text-status-danger"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
                 <p className="mt-1 text-xs text-ink-muted">{n.message}</p>
               </li>

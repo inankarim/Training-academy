@@ -1,7 +1,7 @@
 import { body, param, query } from 'express-validator';
 
 export const notificationIdParamValidation = [
-  param('id').isString().notEmpty().withMessage('A notification id is required.'),
+  param('id').isMongoId().withMessage('A valid notification id is required.'),
 ];
 
 export const listNotificationsValidation = [

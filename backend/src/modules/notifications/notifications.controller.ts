@@ -35,6 +35,15 @@ export async function markRead(req: Request, res: Response, next: NextFunction):
   }
 }
 
+export async function deleteNotification(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    await notificationsService.deleteForUser(requesterFrom(req), req.params.id);
+    res.json({ success: true, data: { message: 'Notification removed.' } });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function markAllRead(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     await notificationsService.markAllRead(requesterFrom(req));

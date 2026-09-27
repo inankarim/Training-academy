@@ -15,6 +15,7 @@ notificationsRouter.get('/', listNotificationsValidation, validate, controller.l
 notificationsRouter.get('/unread-count', controller.getUnreadCount);
 notificationsRouter.post('/read-all', controller.markAllRead);
 notificationsRouter.post('/:id/read', notificationIdParamValidation, validate, controller.markRead);
+notificationsRouter.delete('/:id', notificationIdParamValidation, validate, controller.deleteNotification);
 notificationsRouter.post(
   '/custom',
   requireRole('admin', 'super_admin'),

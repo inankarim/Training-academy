@@ -102,6 +102,11 @@ export async function markRead(requester: RequesterContext, notificationId: stri
   await notificationsRepo.markRead(notificationId, requester.id);
 }
 
+export async function deleteForUser(requester: RequesterContext, notificationId: string): Promise<void> {
+  const deleted = await notificationsRepo.deleteForRecipient(notificationId, requester);
+  if (!deleted) throw new AppError('Notification not found.', 404);
+}
+
 export async function markAllRead(requester: RequesterContext): Promise<void> {
   await notificationsRepo.markAllReadForRecipient(requester);
 }

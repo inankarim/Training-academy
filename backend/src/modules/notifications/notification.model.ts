@@ -15,6 +15,7 @@ export interface NotificationDocument extends Document {
   relatedCourseId: string | null;
   relatedUserId: string | null;
   readBy: string[];
+  deletedBy: string[];
   createdAt: Date;
 }
 
@@ -30,6 +31,9 @@ const NotificationSchema = new Schema<NotificationDocument>(
     relatedCourseId: { type: String, default: null },
     relatedUserId: { type: String, default: null },
     readBy: { type: [String], default: [] },
+    // Per-user dismissal: role notifications are one shared doc, so deleting
+    // must hide it for that user only, never remove it for everyone else.
+    deletedBy: { type: [String], default: [] },
     createdAt: { type: Date, default: Date.now },
   },
   { collection: 'notifications', minimize: false },

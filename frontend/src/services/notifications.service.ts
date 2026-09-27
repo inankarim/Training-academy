@@ -26,6 +26,11 @@ export async function markNotificationReadApi(id: string): Promise<void> {
   unwrap(data, 'Failed to mark notification as read');
 }
 
+export async function deleteNotificationApi(id: string): Promise<void> {
+  const { data } = await apiClient.delete<ApiResponse<{ message: string }>>(`${BASE}/${id}`);
+  unwrap(data, 'Failed to remove notification');
+}
+
 export async function markAllNotificationsReadApi(): Promise<void> {
   const { data } = await apiClient.post<ApiResponse<{ message: string }>>(`${BASE}/read-all`);
   unwrap(data, 'Failed to mark all notifications as read');

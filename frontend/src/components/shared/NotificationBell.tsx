@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Bell } from 'lucide-react';
+import { Bell, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import {
   listNotificationsApi,
   getUnreadCountApi,
   markNotificationReadApi,
   markAllNotificationsReadApi,
+  deleteNotificationApi,
 } from '../../services/notifications.service';
 
 function formatRelativeTime(iso: string): string {
@@ -57,6 +58,13 @@ export const NotificationBell: React.FC<{ notificationsPath: string }> = ({ noti
     }
   }
 
+  async function handleDelete(id: string) {
+    await deleteNotificationApi(id);
+    queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
+    queryClient.invalidateQueries({ queryKey: ['notifications-recent'] });
+    queryClient.invalidateQueries({ queryKey: ['notifications-page'] });
+  }
+
   async function handleMarkAllRead() {
     await markAllNotificationsReadApi();
     queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
@@ -91,20 +99,31 @@ export const NotificationBell: React.FC<{ notificationsPath: string }> = ({ noti
               <p className="p-4 text-center text-[11px] text-ink-muted">No notifications yet.</p>
             ) : (
               list.items.map((n) => (
-                <button
+                <div
                   key={n.id}
-                  onClick={() => handleItemClick(n.id, n.isRead)}
-                  className="flex w-full items-start gap-2 border-b border-surface-border px-3 py-2.5 text-left last:border-0 hover:bg-surface/60"
+                  className="group flex items-start gap-2 border-b border-surface-border px-3 py-2.5 last:border-0 hover:bg-surface/60"
                 >
-                  <span
-                    className={clsx('mt-1 h-1.5 w-1.5 shrink-0 rounded-full', n.isRead ? 'bg-transparent' : 'bg-accent')}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-semibold text-ink">{n.title}</p>
-                    <p className="line-clamp-2 text-[11px] text-ink-muted">{n.message}</p>
-                    <p className="mt-0.5 text-[10px] text-ink-faint">{formatRelativeTime(n.createdAt)}</p>
-                  </div>
-                </button>
+                  <button
+                    onClick={() => handleItemClick(n.id, n.isRead)}
+                    className="flex min-w-0 flex-1 items-start gap-2 text-left"
+                  >
+                    <span
+                      className={clsx('mt-1 h-1.5 w-1.5 shrink-0 rounded-full', n.isRead ? 'bg-transparent' : 'bg-accent')}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold text-ink">{n.title}</p>
+                      <p className="line-clamp-2 text-[11px] text-ink-muted">{n.message}</p>
+                      <p className="mt-0.5 text-[10px] text-ink-faint">{formatRelativeTime(n.createdAt)}</p>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(n.id)}
+                    title="Remove"
+                    className="shrink-0 rounded p-1 text-ink-faint hover:bg-status-dangerSubtle hover:text-status-danger"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               ))
             )}
           </div>
