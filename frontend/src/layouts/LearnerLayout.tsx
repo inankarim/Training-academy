@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Activity,
   GraduationCap,
+  UserRound,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -73,6 +74,19 @@ export const LearnerLayout: React.FC = () => {
               </NavLink>
 
               <NavLink
+                to="/learner/profile"
+                className={({ isActive }) =>
+                  clsx(
+                    'flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-medium transition',
+                    isActive ? 'bg-accent/10 font-semibold text-accent' : 'text-ink-muted hover:text-ink',
+                  )
+                }
+              >
+                <UserRound className="h-4 w-4" />
+                Profile
+              </NavLink>
+
+              <NavLink
                 to="/system-status"
                 className={({ isActive }) =>
                   clsx(
@@ -124,10 +138,28 @@ export const LearnerLayout: React.FC = () => {
 
             {/* User pill */}
             <div className="flex items-center gap-2">
-              <div className="text-right">
-                <p className="text-xs font-semibold text-ink">{user?.fullName}</p>
-                <p className="text-[10px] text-ink-muted">{user?.designation || user?.role}</p>
-              </div>
+              <button
+                onClick={() => navigate('/learner/profile')}
+                title="My profile"
+                className="flex items-center gap-2 rounded-md px-1 py-0.5 text-right hover:bg-surface"
+              >
+                <div>
+                  <p className="text-xs font-semibold text-ink">{user?.fullName}</p>
+                  <p className="text-[10px] text-ink-muted">{user?.designation || user?.role}</p>
+                </div>
+                {user?.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="" className="h-8 w-8 rounded-full border border-surface-border object-cover" />
+                ) : (
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/10 text-[11px] font-bold text-accent">
+                    {user?.fullName
+                      .split(' ')
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .map((p) => p[0]?.toUpperCase())
+                      .join('')}
+                  </span>
+                )}
+              </button>
               <button
                 onClick={() => logout()}
                 title="Sign out"

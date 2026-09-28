@@ -399,30 +399,30 @@ export const CourseBuilderPage: React.FC = () => {
                       className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none"
                     />
                   </div>
+                  {/* Pass mark and attempts are platform rules, not per-course settings. */}
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-ink">Passing Score (%)</label>
-                    <input
-                      type="number"
-                      value={passingScore}
-                      onChange={(e) => setPassingScore(e.target.value)}
-                      onBlur={handleSaveQuizConfig}
-                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs text-ink focus:border-accent focus:bg-surface-card focus:outline-none"
-                    />
+                    <p className="block text-xs font-semibold uppercase tracking-wider text-ink">Pass Mark</p>
+                    <p className="mt-1.5 rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs font-medium text-ink-muted">
+                      50% (fixed)
+                    </p>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-ink">Max Attempts</label>
-                    <select
-                      value={maxAttempts}
-                      onChange={(e) => { setMaxAttempts(e.target.value); }}
-                      onBlur={handleSaveQuizConfig}
-                      className="mt-1.5 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-ink focus:border-accent focus:bg-surface-card focus:outline-none"
-                    >
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <option key={n} value={n}>{n}</option>
-                      ))}
-                    </select>
+                    <p className="block text-xs font-semibold uppercase tracking-wider text-ink">Attempts</p>
+                    <p className="mt-1.5 rounded-md border border-surface-border bg-surface px-3.5 py-2 text-xs font-medium text-ink-muted">
+                      1 — HR grants more
+                    </p>
                   </div>
                 </div>
+                <p className="mt-3 text-[11px] text-ink-muted">
+                  Learners take this after their last lesson; passing it completes the course. They earn the XP
+                  reward in proportion to their score (e.g. 55% earns 55% of the XP).
+                </p>
+                {quizCount === 0 && (
+                  <p className="mt-3 flex items-center gap-1.5 rounded-md bg-status-warningSubtle px-3 py-2 text-[11px] font-medium text-status-warning">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    Required — this course can&apos;t be published until the final quiz has at least one question.
+                  </p>
+                )}
                 <button
                   onClick={() => navigate(`/staff/courses/${courseId}/final-quiz/build`)}
                   className="mt-5 flex items-center gap-2 rounded-md border border-surface-border px-4 py-2 text-xs font-semibold text-ink-muted transition hover:border-accent hover:text-accent"

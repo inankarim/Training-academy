@@ -8,6 +8,7 @@ export interface AuthenticatedUser {
   role: UserRole;
   designation: string | null;
   mustChangePassword: boolean;
+  avatarUrl: string | null;
 }
 
 export interface AuthResponseData {

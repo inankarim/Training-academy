@@ -29,6 +29,23 @@ export async function notifyCoursePublished(course: { id: string; name: string }
   });
 }
 
+export async function notifyFinalQuizFailed(input: {
+  learnerId: string;
+  learnerName: string;
+  courseId: string;
+  courseName: string;
+  scorePercent: number;
+  attemptNumber: number;
+}): Promise<void> {
+  await notificationsRepo.createRoleNotificationForRoles(STAFF_ROLES, {
+    category: 'final_quiz_failed',
+    title: 'Final quiz failed',
+    message: `${input.learnerName} failed the final quiz for "${input.courseName}" with ${input.scorePercent}% (attempt ${input.attemptNumber}). Grant another attempt from Assignments if they may retry.`,
+    relatedCourseId: input.courseId,
+    relatedUserId: input.learnerId,
+  });
+}
+
 export async function notifyAssignmentOverdue(input: {
   learnerId: string;
   learnerName: string;

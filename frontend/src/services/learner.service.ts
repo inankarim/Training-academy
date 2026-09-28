@@ -7,6 +7,9 @@ import {
   BlockAttemptInput,
   BlockAttemptResult,
   LearnerDashboard,
+  LearnerFinalQuiz,
+  FinalQuizAttemptResult,
+  LearnerProfile,
 } from '../types/learner.types';
 
 const BASE = '/learner';
@@ -53,4 +56,32 @@ export async function submitBlockAttemptApi(
     input,
   );
   return unwrap(data, 'Failed to submit answers').result;
+}
+
+export async function getLearnerFinalQuizApi(courseId: string): Promise<LearnerFinalQuiz> {
+  const { data } = await apiClient.get<ApiResponse<{ finalQuiz: LearnerFinalQuiz }>>(`${BASE}/courses/${courseId}/final-quiz`);
+  return unwrap(data, 'Failed to load final quiz').finalQuiz;
+}
+
+export async function submitFinalQuizAttemptApi(
+  courseId: string,
+  input: BlockAttemptInput,
+): Promise<FinalQuizAttemptResult> {
+  const { data } = await apiClient.post<ApiResponse<{ result: FinalQuizAttemptResult }>>(
+    `${BASE}/courses/${courseId}/final-quiz/attempt`,
+    input,
+  );
+  return unwrap(data, 'Failed to submit final quiz').result;
+}
+
+export async function getLearnerProfileApi(): Promise<LearnerProfile> {
+  const { data } = await apiClient.get<ApiResponse<{ profile: LearnerProfile }>>(`${BASE}/profile`);
+  return unwrap(data, 'Failed to load profile').profile;
+}
+
+export async function uploadProfilePhotoApi(file: File): Promise<string> {
+  const form = new FormData();
+  form.append('file', file);
+  const { data } = await apiClient.post<ApiResponse<{ avatarUrl: string }>>(`${BASE}/profile/photo`, form);
+  return unwrap(data, 'Failed to upload photo').avatarUrl;
 }

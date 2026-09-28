@@ -29,6 +29,7 @@ const BASE_USER_SELECT = `
     u.status,
     u.must_change_password,
     u.last_login_at,
+    u.avatar_url,
     u.created_by,
     u.created_at,
     u.updated_at
@@ -315,4 +316,16 @@ export async function getOrgMetadata(): Promise<OrgMetadata> {
     salesRoles: ['SO', 'TSM', 'ASM', 'RSM', 'NON_SALES'],
     employeeTypes: ['Permanent', 'Probationary', 'Contract', 'Consultant', 'Intern'],
   };
+}
+
+/** Sets the profile photo URL and returns the previous one (so its file can be removed). */
+export async function setUserAvatarUrl(userId: string, avatarUrl: string | null): Promise<string | null> {
+  const { rows } = await getPool().query<{ previous: string | null }>(
+    `UPDATE users u SET avatar_url = $2
+     FROM (SELECT avatar_url AS previous FROM users WHERE id = $1) old
+     WHERE u.id = $1
+     RETURNING old.previous`,
+    [userId, avatarUrl],
+  );
+  return rows[0]?.previous ?? null;
 }

@@ -11,11 +11,12 @@ export interface UserRecord {
   status: 'active' | 'deactivated';
   must_change_password: boolean;
   last_login_at: Date | null;
+  avatar_url: string | null;
 }
 
 const USER_SELECT = `
   SELECT u.id, u.full_name, u.email, u.password_hash, u.role_id, r.name AS role_name,
-         u.designation, u.status, u.must_change_password, u.last_login_at
+         u.designation, u.status, u.must_change_password, u.last_login_at, u.avatar_url
   FROM users u
   JOIN roles r ON r.id = u.role_id
 `;

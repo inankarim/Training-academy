@@ -20,6 +20,7 @@ export interface UserRecord {
   status: 'active' | 'deactivated';
   must_change_password: boolean;
   last_login_at: Date | null;
+  avatar_url: string | null;
   created_by: string | null;
   created_at: Date;
   updated_at: Date;

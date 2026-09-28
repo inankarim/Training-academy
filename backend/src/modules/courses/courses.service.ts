@@ -7,6 +7,7 @@ import * as courseModulesRepo from '../lessons/courseModules.postgres.repository
 import { countLessonsForCourse, findPublishedLessonsByCourse } from '../lessons/lessons.postgres.repository';
 import { findLessonContentByLessonId } from '../lessons/lessons.mongo.repository';
 import { lessonHasGradedCheck } from '../lessons/lessons.service';
+import { getFinalQuiz } from './finalQuiz.mongo.repository';
 import * as notificationsService from '../notifications/notifications.service';
 import {
   CourseDTO,
@@ -250,6 +251,20 @@ async function assertLessonsReadyForPublish(courseId: string): Promise<void> {
   if (missing.length > 0) {
     throw new AppError(
       `Every lesson needs a Knowledge Check or Quiz with at least one question before publishing. Missing on: ${missing.join(', ')}.`,
+      400,
+    );
+  }
+
+  // Learners can only complete a course by passing its final quiz, so a
+  // course can't go live without one.
+  const quiz = await getFinalQuiz(courseId);
+  const questionCount = quiz?.questions.length ?? 0;
+  const required = Math.max(1, quiz?.totalQuestions ?? 0);
+  if (questionCount < required) {
+    throw new AppError(
+      questionCount === 0
+        ? 'Add a Final Quiz with at least one question before publishing this course.'
+        : `The Final Quiz is set to ${required} questions but only has ${questionCount}. Add the rest before publishing.`,
       400,
     );
   }

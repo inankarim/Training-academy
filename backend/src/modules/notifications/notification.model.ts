@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export type NotificationAudienceType = 'role' | 'user';
 export type NotificationAudienceRole = 'hr' | 'admin' | 'super_admin';
-export type NotificationCategory = 'course_published' | 'assignment_overdue' | 'custom';
+export type NotificationCategory = 'course_published' | 'assignment_overdue' | 'final_quiz_failed' | 'custom';
 
 export interface NotificationDocument extends Document {
   audienceType: NotificationAudienceType;
@@ -24,7 +24,7 @@ const NotificationSchema = new Schema<NotificationDocument>(
     audienceType: { type: String, enum: ['role', 'user'], required: true },
     audienceRole: { type: String, enum: ['hr', 'admin', 'super_admin'], default: null },
     audienceUserId: { type: String, default: null, index: true },
-    category: { type: String, enum: ['course_published', 'assignment_overdue', 'custom'], required: true },
+    category: { type: String, enum: ['course_published', 'assignment_overdue', 'final_quiz_failed', 'custom'], required: true },
     title: { type: String, required: true },
     message: { type: String, required: true },
     createdBy: { type: String, default: null },

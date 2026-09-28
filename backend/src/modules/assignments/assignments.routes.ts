@@ -44,3 +44,9 @@ assignmentsRouter.get('/', listAssignmentsValidation, validate, controller.listA
 assignmentsRouter.get('/courses', controller.listAssignableCourses);
 assignmentsRouter.get('/:assignmentId', assignmentIdParamValidation, validate, controller.getAssignment);
 assignmentsRouter.delete('/:assignmentId', assignmentIdParamValidation, validate, controller.deleteAssignment);
+assignmentsRouter.post(
+  '/:assignmentId/final-quiz/grant-attempt',
+  assignmentIdParamValidation,
+  validate,
+  controller.grantFinalQuizAttempt,
+);

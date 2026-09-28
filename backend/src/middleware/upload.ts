@@ -40,3 +40,18 @@ export const uploadMedia = multer({
   fileFilter,
   limits: { fileSize: MAX_FILE_SIZE_BYTES },
 });
+
+const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024;
+
+/** Profile photos: images only, 5MB. */
+export const uploadAvatar = multer({
+  storage,
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      cb(new Error('Profile photo must be an image (JPG, PNG or WebP).'));
+      return;
+    }
+    cb(null, true);
+  },
+  limits: { fileSize: MAX_AVATAR_SIZE_BYTES },
+});

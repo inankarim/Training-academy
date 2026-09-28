@@ -21,6 +21,7 @@ function toDTO(user: authRepo.UserRecord): AuthenticatedUserDTO {
     role: user.role_name,
     designation: user.designation,
     mustChangePassword: user.must_change_password,
+    avatarUrl: user.avatar_url,
   };
 }
 

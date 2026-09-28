@@ -5,14 +5,18 @@ import * as coursesRepo from '../courses/courses.postgres.repository';
 import * as lessonsRepo from '../lessons/lessons.postgres.repository';
 import * as usersRepo from '../users/users.repository';
 import * as notificationsService from '../notifications/notifications.service';
+import * as notificationsRepo from '../notifications/notifications.mongo.repository';
+import { getFinalQuizProgress, loadRequiredFinalQuiz } from '../learner/finalQuiz.progress';
 import { AssignmentDTO, AssignmentRecord, CreateAssignmentInput, AssignmentFilters, RequesterContext, AssignableCourseDTO } from './assignments.types';
 import { ClientContext } from '../auth/auth.types';
 
 async function toDTO(record: AssignmentRecord): Promise<AssignmentDTO> {
-  const [course, user] = await Promise.all([
+  const [course, user, quiz] = await Promise.all([
     coursesRepo.findCourseById(record.course_id),
     usersRepo.findUserById(record.assigned_to),
+    loadRequiredFinalQuiz(record.course_id),
   ]);
+  const finalQuiz = quiz ? await getFinalQuizProgress(record.course_id, record) : null;
 
   return {
     id: record.id,
@@ -25,7 +29,49 @@ async function toDTO(record: AssignmentRecord): Promise<AssignmentDTO> {
     status: record.status,
     assignedAt: record.assigned_at,
     completedAt: record.completed_at,
+    finalQuiz,
   };
+}
+
+/** After a failed final quiz, HR allows the learner exactly one more attempt. */
+export async function grantFinalQuizAttempt(
+  requester: RequesterContext,
+  assignmentId: string,
+  ctx: ClientContext,
+): Promise<AssignmentDTO> {
+  const record = await assignmentsRepo.findAssignmentById(assignmentId);
+  if (!record) throw new AppError('Assignment not found.', 404);
+
+  const quiz = await loadRequiredFinalQuiz(record.course_id);
+  if (!quiz) throw new AppError('This course has no final quiz.', 400);
+
+  const progress = await getFinalQuizProgress(record.course_id, record);
+  if (progress.status !== 'failed') {
+    throw new AppError('Another attempt can only be granted after the learner has failed the final quiz.', 400);
+  }
+
+  await assignmentsRepo.grantFinalQuizAttempt(assignmentId);
+
+  const course = await coursesRepo.findCourseById(record.course_id);
+  await notificationsRepo.createUserNotifications([record.assigned_to], {
+    category: 'custom',
+    title: 'New final quiz attempt',
+    message: `HR has given you another attempt at the final quiz for "${course?.name ?? 'your course'}". You need 50% to pass.`,
+    createdBy: requester.id,
+  });
+
+  await writeAuditLog({
+    actorUserId: requester.id,
+    action: 'assignment.final_quiz_attempt_granted',
+    targetType: 'course_assignment',
+    targetId: assignmentId,
+    metadata: { courseId: record.course_id, userId: record.assigned_to, attemptsUsed: progress.attemptsUsed },
+    ipAddress: ctx.ip,
+    userAgent: ctx.userAgent,
+  });
+
+  const updated = await assignmentsRepo.findAssignmentById(assignmentId);
+  return toDTO(updated!);
 }
 
 export async function createAssignment(

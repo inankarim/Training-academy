@@ -27,8 +27,9 @@ export async function findLatestAssignmentForLearnerCourse(userId: string, cours
     due_date: string;
     assigned_at: Date;
     completed_at: Date | null;
+    final_quiz_extra_attempts: number;
   }>(
-    `SELECT id, status, due_date::text AS due_date, assigned_at, completed_at
+    `SELECT id, status, due_date::text AS due_date, assigned_at, completed_at, final_quiz_extra_attempts
      FROM course_assignments
      WHERE assigned_to = $1 AND course_id = $2
      ORDER BY assigned_at DESC
@@ -140,6 +141,9 @@ export async function recordActivityAndAddXp(userId: string, xpDelta: number): P
 }
 
 export async function incrementLessonsCompleted(userId: string): Promise<void> {
+  // The stats row may not exist yet for a brand-new learner; without it
+  // this UPDATE matches nothing and the count is silently lost.
+  await getOrCreateLearnerStats(userId);
   await getPool().query(
     'UPDATE learner_stats SET lessons_completed_count = lessons_completed_count + 1 WHERE user_id = $1',
     [userId],
@@ -147,8 +151,68 @@ export async function incrementLessonsCompleted(userId: string): Promise<void> {
 }
 
 export async function incrementCoursesCompleted(userId: string): Promise<void> {
+  // The stats row may not exist yet for a brand-new learner; without it
+  // this UPDATE matches nothing and the count is silently lost.
+  await getOrCreateLearnerStats(userId);
   await getPool().query(
     'UPDATE learner_stats SET courses_completed_count = courses_completed_count + 1 WHERE user_id = $1',
     [userId],
   );
+}
+
+// --- Learner profile ---
+
+/**
+ * The stored current_streak only changes when the learner does something, so
+ * after a missed day it still holds the old number. The live streak is that
+ * value only while the last activity was today or yesterday; otherwise 0.
+ */
+export async function getStreakState(userId: string): Promise<{ currentStreak: number; activeToday: boolean; today: string }> {
+  const { rows } = await getPool().query<{ current_streak: number; active_today: boolean; today: string }>(
+    `SELECT CASE WHEN s.last_activity_date >= CURRENT_DATE - 1 THEN s.current_streak ELSE 0 END AS current_streak,
+            COALESCE(s.last_activity_date = CURRENT_DATE, false) AS active_today,
+            to_char(CURRENT_DATE, 'YYYY-MM-DD') AS today
+     FROM (SELECT 1) one
+     LEFT JOIN learner_stats s ON s.user_id = $1`,
+    [userId],
+  );
+  const row = rows[0];
+  return { currentStreak: row?.current_streak ?? 0, activeToday: row?.active_today ?? false, today: row.today };
+}
+
+/** Lessons completed per calendar day (database time zone). */
+export async function listLessonCompletionDays(userId: string): Promise<Array<{ day: string; count: number }>> {
+  const { rows } = await getPool().query<{ day: string; count: number }>(
+    `SELECT to_char(p.completed_at, 'YYYY-MM-DD') AS day, COUNT(*)::int AS count
+     FROM learner_lesson_progress p
+     JOIN course_assignments a ON a.id = p.assignment_id
+     WHERE a.assigned_to = $1 AND p.completed_at IS NOT NULL
+     GROUP BY 1`,
+    [userId],
+  );
+  return rows;
+}
+
+export async function getDatabaseTimeZone(): Promise<string> {
+  const { rows } = await getPool().query<{ TimeZone: string }>('SHOW TimeZone');
+  return rows[0]?.TimeZone ?? 'UTC';
+}
+
+/** Completed assignments, latest first — one row per completion. */
+export async function listCompletedAssignments(userId: string) {
+  const { rows } = await getPool().query<{
+    assignment_id: string;
+    course_id: string;
+    course_name: string;
+    total_xp_reward: number;
+    completed_at: Date;
+  }>(
+    `SELECT a.id AS assignment_id, c.id AS course_id, c.name AS course_name, c.total_xp_reward, a.completed_at
+     FROM course_assignments a
+     JOIN courses c ON c.id = a.course_id
+     WHERE a.assigned_to = $1 AND a.status = 'completed' AND a.completed_at IS NOT NULL
+     ORDER BY a.completed_at DESC`,
+    [userId],
+  );
+  return rows;
 }

@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { getLearnerCourseApi } from '../../services/learner.service';
-import { ChevronLeft, CheckCircle2, PlayCircle, Circle, Clock, Zap } from 'lucide-react';
+import { ChevronLeft, CheckCircle2, PlayCircle, Circle, Clock, Zap, Trophy, Lock, ClipboardCheck } from 'lucide-react';
 import clsx from 'clsx';
 
 export const CourseOverviewPage: React.FC = () => {
@@ -118,6 +118,60 @@ export const CourseOverviewPage: React.FC = () => {
               </div>
             );
           })}
+
+          {course.finalQuiz && (
+            <div
+              className={clsx(
+                'flex items-center gap-3 rounded-lg border p-4 shadow-card',
+                course.finalQuiz.status === 'available'
+                  ? 'border-accent bg-accent/5'
+                  : course.finalQuiz.status === 'passed'
+                  ? 'border-status-success/30 bg-status-successSubtle'
+                  : course.finalQuiz.status === 'failed'
+                  ? 'border-status-danger/30 bg-status-dangerSubtle'
+                  : 'border-surface-border bg-surface-card',
+              )}
+            >
+              {course.finalQuiz.status === 'passed' ? (
+                <Trophy className="h-5 w-5 shrink-0 text-status-success" />
+              ) : course.finalQuiz.status === 'locked' ? (
+                <Lock className="h-5 w-5 shrink-0 text-ink-faint" />
+              ) : (
+                <ClipboardCheck
+                  className={clsx(
+                    'h-5 w-5 shrink-0',
+                    course.finalQuiz.status === 'failed' ? 'text-status-danger' : 'text-accent',
+                  )}
+                />
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-ink-muted">Final Quiz</p>
+                <p className="truncate text-sm font-semibold text-ink">{course.finalQuiz.quizName}</p>
+                <p className="text-[11px] text-ink-muted">
+                  {course.finalQuiz.status === 'locked' && 'Finish every lesson to unlock it.'}
+                  {course.finalQuiz.status === 'available' &&
+                    `${course.finalQuiz.questionCount} questions · pass mark ${course.finalQuiz.passingScore}% — required to complete the course.`}
+                  {course.finalQuiz.status === 'passed' &&
+                    `Passed with ${course.finalQuiz.bestScorePercent ?? 0}% — course complete.`}
+                  {course.finalQuiz.status === 'failed' &&
+                    `Not passed (${course.finalQuiz.bestScorePercent ?? 0}%). Please contact HR personally to get another attempt.`}
+                </p>
+              </div>
+              {course.finalQuiz.status !== 'locked' && (
+                <button
+                  onClick={() => navigate(`/learner/courses/${course.courseId}/final-quiz`)}
+                  className={clsx(
+                    'shrink-0 rounded-md px-3.5 py-2 text-xs font-semibold',
+                    course.finalQuiz.status === 'available'
+                      ? 'bg-accent text-white hover:bg-accent-hover'
+                      : 'border border-surface-border bg-surface-card text-ink-muted hover:text-ink',
+                  )}
+                >
+                  {course.finalQuiz.status === 'available' ? 'Start Final Quiz' : 'View'}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -137,6 +191,19 @@ export const CourseOverviewPage: React.FC = () => {
           <p className="mt-3 text-[11px] text-ink-muted">
             {course.completedLessonCount} of {course.lessonCount} lessons complete
           </p>
+          {course.finalQuiz && (
+            <p
+              className={clsx(
+                'mt-1 text-[11px] font-medium',
+                course.finalQuiz.status === 'passed' ? 'text-status-success' : 'text-status-warning',
+              )}
+            >
+              {course.finalQuiz.status === 'passed' ? 'Final quiz passed' : 'Final quiz required to complete'}
+            </p>
+          )}
+          {course.finalQuiz && (
+            <p className="mt-1 text-[10px] text-ink-faint">Lessons count for 75%, the final quiz for 25%.</p>
+          )}
           <p className="mt-1 text-[11px] text-ink-faint">Due {course.dueDate}</p>
         </div>
       </div>

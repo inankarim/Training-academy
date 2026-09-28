@@ -10,6 +10,7 @@ export interface AssignmentRecord {
   assigned_at: Date;
   completed_at: Date | null;
   overdue_notified_at: Date | null;
+  final_quiz_extra_attempts: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -25,6 +26,13 @@ export interface AssignmentDTO {
   status: AssignmentStatus;
   assignedAt: Date;
   completedAt: Date | null;
+  /** Null when the course has no final quiz. */
+  finalQuiz: {
+    status: 'locked' | 'available' | 'passed' | 'failed';
+    attemptsUsed: number;
+    allowedAttempts: number;
+    bestScorePercent: number | null;
+  } | null;
 }
 
 export interface CreateAssignmentInput {

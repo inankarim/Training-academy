@@ -8,6 +8,15 @@ import * as lessonsMongoRepo from '../lessons/lessons.mongo.repository';
 import * as learnerRepo from './learner.postgres.repository';
 import * as learnerMongoRepo from './learner.mongo.repository';
 import { computeLevel } from './levels';
+import * as usersRepo from '../users/users.repository';
+import * as notificationsService from '../notifications/notifications.service';
+import {
+  FINAL_QUIZ_PASS_PERCENT,
+  courseProgressPercent,
+  getFinalQuizProgress,
+  loadRequiredFinalQuiz,
+  scorePercent,
+} from './finalQuiz.progress';
 import {
   RequesterContext,
   LearnerCourseSummaryDTO,
@@ -16,6 +25,9 @@ import {
   BlockAttemptInput,
   BlockAttemptResultDTO,
   LearnerDashboardDTO,
+  FinalQuizSummaryDTO,
+  LearnerFinalQuizDTO,
+  FinalQuizAttemptResultDTO,
 } from './learner.types';
 import { ClientContext } from '../auth/auth.types';
 
@@ -48,11 +60,13 @@ async function courseProgress(userId: string, courseId: string) {
   const lessons = await lessonsRepo.findPublishedLessonsByCourse(courseId);
   const completed = await learnerRepo.countCompletedLessons(assignment.id);
   const total = lessons.length;
+  const quiz = await loadRequiredFinalQuiz(courseId);
+  const quizPassed = quiz ? (await getFinalQuizProgress(courseId, assignment)).status === 'passed' : false;
   return {
     assignment,
     lessonCount: total,
     completedLessonCount: completed,
-    progress: total > 0 ? Math.round((completed / total) * 100) : 0,
+    progress: courseProgressPercent(completed, total, quiz ? { passed: quizPassed } : null),
   };
 }
 
@@ -104,6 +118,7 @@ export async function getCourseForLearner(
   const completedLessonCount = progressRows.filter(
     (p) => p.status === 'completed' && visibleLessonIds.has(p.lesson_id),
   ).length;
+  const finalQuiz = await finalQuizSummaryFor(courseId, assignment);
 
   return {
     courseId: course.id,
@@ -115,7 +130,7 @@ export async function getCourseForLearner(
     bannerRef: course.banner_ref,
     lessonCount: lessons.length,
     completedLessonCount,
-    progress: lessons.length > 0 ? Math.round((completedLessonCount / lessons.length) * 100) : 0,
+    progress: courseProgressPercent(completedLessonCount, lessons.length, finalQuiz ? { passed: finalQuiz.status === 'passed' } : null),
     dueDate: assignment.due_date,
     assignmentStatus: assignment.status,
     lessons: lessons.map((l) => ({
@@ -126,6 +141,160 @@ export async function getCourseForLearner(
       moduleId: l.module_id,
       moduleTitle: moduleTitleById.get(l.module_id) ?? '',
       progressStatus: progressByLesson.get(l.id) ?? 'not_started',
+    })),
+    finalQuiz,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Final course quiz
+// ---------------------------------------------------------------------------
+
+type LearnerAssignment = NonNullable<Awaited<ReturnType<typeof learnerRepo.findLatestAssignmentForLearnerCourse>>>;
+
+async function finalQuizSummaryFor(courseId: string, assignment: LearnerAssignment): Promise<FinalQuizSummaryDTO | null> {
+  const quiz = await loadRequiredFinalQuiz(courseId);
+  if (!quiz) return null;
+  const progress = await getFinalQuizProgress(courseId, assignment);
+  return {
+    quizName: quiz.quizName || 'Final Quiz',
+    status: progress.status,
+    passingScore: FINAL_QUIZ_PASS_PERCENT,
+    allowedAttempts: progress.allowedAttempts,
+    attemptsUsed: progress.attemptsUsed,
+    questionCount: quiz.questions.length,
+    xpReward: quiz.xpReward,
+    bestScorePercent: progress.bestScorePercent,
+  };
+}
+
+export async function getFinalQuizForLearner(requester: RequesterContext, courseId: string): Promise<LearnerFinalQuizDTO> {
+  const assignment = await assertAssignment(requester.id, courseId);
+  const course = await coursesRepo.findCourseById(courseId);
+  const quiz = await loadRequiredFinalQuiz(courseId);
+  if (!course || !quiz) throw new AppError('This course has no final quiz.', 404);
+
+  const summary = (await finalQuizSummaryFor(courseId, assignment))!;
+  return {
+    ...summary,
+    courseId,
+    courseName: course.name,
+    // Questions (never answers) are only handed out while an attempt is open.
+    questions:
+      summary.status === 'available'
+        ? quiz.questions
+            .slice()
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .map((q) => ({ id: q.id, question: q.question, options: q.options, points: q.points }))
+        : [],
+  };
+}
+
+export async function submitFinalQuizAttempt(
+  requester: RequesterContext,
+  courseId: string,
+  input: BlockAttemptInput,
+  ctx: ClientContext,
+): Promise<FinalQuizAttemptResultDTO> {
+  const assignment = await assertAssignment(requester.id, courseId);
+  const course = await coursesRepo.findCourseById(courseId);
+  const quiz = await loadRequiredFinalQuiz(courseId);
+  if (!course || !quiz) throw new AppError('This course has no final quiz.', 404);
+
+  const progress = await getFinalQuizProgress(courseId, assignment);
+  if (progress.status === 'locked') throw new AppError('Complete every lesson before taking the final quiz.', 400);
+  if (progress.status === 'passed') throw new AppError('You have already passed this final quiz.', 400);
+  if (progress.status === 'failed') {
+    throw new AppError('You have no attempts left. Please contact HR personally to get another attempt.', 400);
+  }
+
+  const answerByQuestion = new Map(input.answers.map((a) => [a.questionId, a.selectedAnswer.trim()]));
+  if (quiz.questions.some((q) => !answerByQuestion.get(q.id))) {
+    throw new AppError('Answer every question before submitting.', 400);
+  }
+
+  const graded = quiz.questions.map((q) => ({ q, correct: answerByQuestion.get(q.id) === q.correctAnswer.trim() }));
+  const maxScore = graded.reduce((sum, g) => sum + g.q.points, 0);
+  const earned = graded.reduce((sum, g) => sum + (g.correct ? g.q.points : 0), 0);
+  const percent = scorePercent(earned, maxScore);
+  const passed = percent >= FINAL_QUIZ_PASS_PERCENT;
+  const attemptNumber = progress.attemptsUsed + 1;
+
+  await learnerMongoRepo.recordAttempt({
+    userId: requester.id,
+    courseId,
+    lessonId: null,
+    blockId: learnerMongoRepo.FINAL_QUIZ_BLOCK_ID,
+    assignmentId: assignment.id,
+    attemptNumber,
+    answers: graded.map((g) => ({
+      questionId: g.q.id,
+      selectedAnswer: answerByQuestion.get(g.q.id)!,
+      correct: g.correct,
+    })),
+    totalScore: earned,
+    maxScore,
+    passed,
+  });
+
+  let xpAwarded = 0;
+  if (passed) {
+    // Quiz XP is proportional to the score: 55% of a 100-XP quiz earns 55.
+    xpAwarded += Math.round((quiz.xpReward * percent) / 100);
+
+    // completed_at already set means this assignment was completed (and paid
+    // its course XP) before — e.g. reopened for the quiz — so don't pay twice.
+    const firstCompletion = !assignment.completed_at;
+    if (firstCompletion) {
+      xpAwarded += course.total_xp_reward;
+      await learnerRepo.incrementCoursesCompleted(requester.id);
+    }
+    await learnerRepo.setAssignmentStatus(assignment.id, 'completed', new Date());
+    await learnerRepo.recordActivityAndAddXp(requester.id, xpAwarded);
+
+    await writeAuditLog({
+      actorUserId: requester.id,
+      action: 'learner.course_completed',
+      targetType: 'course',
+      targetId: courseId,
+      metadata: { assignmentId: assignment.id, finalQuizScore: percent, attemptNumber },
+      ipAddress: ctx.ip,
+      userAgent: ctx.userAgent,
+    });
+  } else {
+    await learnerRepo.recordActivityAndAddXp(requester.id, 0);
+    const learner = await usersRepo.findUserById(requester.id);
+    await notificationsService.notifyFinalQuizFailed({
+      learnerId: requester.id,
+      learnerName: learner?.full_name ?? 'A learner',
+      courseId,
+      courseName: course.name,
+      scorePercent: percent,
+      attemptNumber,
+    });
+  }
+
+  await writeAuditLog({
+    actorUserId: requester.id,
+    action: passed ? 'learner.final_quiz_passed' : 'learner.final_quiz_failed',
+    targetType: 'course',
+    targetId: courseId,
+    metadata: { assignmentId: assignment.id, attemptNumber, scorePercent: percent, earned, maxScore },
+    ipAddress: ctx.ip,
+    userAgent: ctx.userAgent,
+  });
+
+  return {
+    passed,
+    scorePercent: percent,
+    passingScore: FINAL_QUIZ_PASS_PERCENT,
+    attemptNumber,
+    xpAwarded,
+    status: passed ? 'passed' : 'failed',
+    perQuestion: graded.map((g) => ({
+      questionId: g.q.id,
+      correct: g.correct,
+      ...(quiz.retryPolicy?.hideCorrectAnswer === false ? { correctAnswer: g.q.correctAnswer } : {}),
     })),
   };
 }
@@ -215,7 +384,11 @@ export async function completeLesson(
     learnerRepo.countCompletedLessons(assignment.id),
   ]);
 
-  if (lessons.length > 0 && completedCount >= lessons.length && assignment.status !== 'completed') {
+  // A course with a final quiz only completes when the quiz is passed
+  // (submitFinalQuizAttempt); finishing the lessons just unlocks the quiz.
+  const requiresFinalQuiz = (await loadRequiredFinalQuiz(lesson.course_id)) !== null;
+
+  if (!requiresFinalQuiz && lessons.length > 0 && completedCount >= lessons.length && assignment.status !== 'completed') {
     await learnerRepo.setAssignmentStatus(assignment.id, 'completed', new Date());
     await learnerRepo.incrementCoursesCompleted(requester.id);
 
@@ -318,7 +491,10 @@ export async function submitBlockAttempt(
 }
 
 export async function getDashboard(requester: RequesterContext): Promise<LearnerDashboardDTO> {
-  const stats = await learnerRepo.getOrCreateLearnerStats(requester.id);
+  const [stats, streak] = await Promise.all([
+    learnerRepo.getOrCreateLearnerStats(requester.id),
+    learnerRepo.getStreakState(requester.id),
+  ]);
   const level = computeLevel(stats.total_xp);
 
   return {
@@ -327,7 +503,7 @@ export async function getDashboard(requester: RequesterContext): Promise<Learner
     levelTitle: level.levelTitle,
     xpIntoLevel: level.xpIntoLevel,
     xpForNextLevel: level.xpForNextLevel,
-    currentStreak: stats.current_streak,
+    currentStreak: streak.currentStreak,
     lessonsCompletedCount: stats.lessons_completed_count,
     coursesCompletedCount: stats.courses_completed_count,
   };

@@ -32,6 +32,8 @@ const AssignmentsPage = lazyImport(() => import('./pages/staff/AssignmentsPage')
 
 const CoursesPage = lazyImport(() => import('./pages/learner/CoursesPage'), 'CoursesPage');
 const CourseOverviewPage = lazyImport(() => import('./pages/learner/CourseOverviewPage'), 'CourseOverviewPage');
+const FinalQuizPage = lazyImport(() => import('./pages/learner/FinalQuizPage'), 'FinalQuizPage');
+const LearnerProfilePage = lazyImport(() => import('./pages/learner/LearnerProfilePage'), 'LearnerProfilePage');
 const LessonPlayerPage = lazyImport(() => import('./pages/learner/LessonPlayerPage'), 'LessonPlayerPage');
 const NotificationsPage = lazyImport(() => import('./pages/shared/NotificationsPage'), 'NotificationsPage');
 
@@ -155,8 +157,10 @@ export function App() {
               <Route path="dashboard" element={<LearnerDashboard />} />
               <Route path="courses" element={<CoursesPage />} />
               <Route path="courses/:courseId" element={<CourseOverviewPage />} />
+              <Route path="courses/:courseId/final-quiz" element={<FinalQuizPage />} />
               <Route path="lessons/:lessonId" element={<LessonPlayerPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="profile" element={<LearnerProfilePage />} />
             </Route>
   
             {/* Staff & HR Management Routes */}

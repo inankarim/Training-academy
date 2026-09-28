@@ -6,6 +6,7 @@ import {
   listAssignmentsApi,
   createAssignmentApi,
   deleteAssignmentApi,
+  grantFinalQuizAttemptApi,
 } from '../../services/assignments.service';
 import { AssignmentStatus } from '../../types/assignments.types';
 import { UserSummary } from '../../types/auth.types';
@@ -38,7 +39,19 @@ const STATUS_META: Record<AssignmentStatus, { label: string; className: string; 
     className: 'bg-status-success/10 text-status-success',
     icon: <CheckCircle2 className="h-3 w-3" />,
   },
+  overdue: {
+    label: 'Overdue',
+    className: 'bg-status-dangerSubtle text-status-danger',
+    icon: <AlertCircle className="h-3 w-3" />,
+  },
 };
+
+const FINAL_QUIZ_META = {
+  locked: { label: 'Lessons pending', className: 'text-ink-faint' },
+  available: { label: 'Ready to take', className: 'text-blue-700' },
+  passed: { label: 'Passed', className: 'text-status-success' },
+  failed: { label: 'Failed', className: 'text-status-danger' },
+} as const;
 
 function defaultDueDate(): string {
   const d = new Date();
@@ -124,6 +137,12 @@ export const AssignmentsPage: React.FC = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['assignments'] }),
   });
 
+  const grantAttemptMutation = useMutation({
+    mutationFn: grantFinalQuizAttemptApi,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['assignments'] }),
+    onError: (err: unknown) => window.alert(err instanceof Error ? err.message : 'Failed to grant another attempt'),
+  });
+
   const toggleCourse = (courseId: string) => {
     setSelectedCourses((prev) => {
       const next = new Map(prev);
@@ -153,7 +172,7 @@ export const AssignmentsPage: React.FC = () => {
   }, [courses, selectedCourses]);
 
   const counts = useMemo(() => {
-    const c = { assigned: 0, in_progress: 0, completed: 0 };
+    const c = { assigned: 0, in_progress: 0, completed: 0, overdue: 0 };
     assignments.forEach((a) => {
       c[a.status] += 1;
     });
@@ -416,20 +435,21 @@ export const AssignmentsPage: React.FC = () => {
                 <th className="px-4 py-3 font-semibold">Course</th>
                 <th className="px-4 py-3 font-semibold">Due Date</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
+                <th className="px-4 py-3 font-semibold">Final Quiz</th>
                 <th className="px-4 py-3 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {isLoading && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-ink-faint">
+                  <td colSpan={6} className="px-4 py-8 text-center text-ink-faint">
                     Loading assignments...
                   </td>
                 </tr>
               )}
               {!isLoading && assignments.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-ink-faint">
+                  <td colSpan={6} className="px-4 py-10 text-center text-ink-faint">
                     <ClipboardList className="mx-auto mb-2 h-6 w-6 text-ink-faint" />
                     No assignments yet.
                   </td>
@@ -452,6 +472,36 @@ export const AssignmentsPage: React.FC = () => {
                         {meta.icon}
                         {meta.label}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {a.finalQuiz ? (
+                        <div className="space-y-1">
+                          <p className={clsx('text-[11px] font-semibold', FINAL_QUIZ_META[a.finalQuiz.status].className)}>
+                            {FINAL_QUIZ_META[a.finalQuiz.status].label}
+                            {a.finalQuiz.bestScorePercent !== null && ` · ${a.finalQuiz.bestScorePercent}%`}
+                          </p>
+                          {a.finalQuiz.attemptsUsed > 0 && (
+                            <p className="text-[10px] text-ink-faint">
+                              {a.finalQuiz.attemptsUsed} attempt{a.finalQuiz.attemptsUsed === 1 ? '' : 's'} used
+                            </p>
+                          )}
+                          {a.finalQuiz.status === 'failed' && (
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Give ${a.assignedToName} another attempt at the final quiz?`)) {
+                                  grantAttemptMutation.mutate(a.id);
+                                }
+                              }}
+                              disabled={grantAttemptMutation.isPending}
+                              className="rounded border border-accent/40 px-2 py-0.5 text-[10px] font-semibold text-accent hover:bg-accent/10 disabled:opacity-50"
+                            >
+                              Grant another attempt
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-ink-faint">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button

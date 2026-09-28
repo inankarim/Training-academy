@@ -1,4 +1,4 @@
-export type AssignmentStatus = 'assigned' | 'in_progress' | 'completed';
+export type AssignmentStatus = 'assigned' | 'in_progress' | 'completed' | 'overdue';
 
 export interface Assignment {
   id: string;
@@ -11,6 +11,13 @@ export interface Assignment {
   status: AssignmentStatus;
   assignedAt: string;
   completedAt: string | null;
+  /** Null when the course has no final quiz. */
+  finalQuiz: {
+    status: 'locked' | 'available' | 'passed' | 'failed';
+    attemptsUsed: number;
+    allowedAttempts: number;
+    bestScorePercent: number | null;
+  } | null;
 }
 
 export interface CreateAssignmentInput {

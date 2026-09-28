@@ -50,6 +50,19 @@ export async function getAssignment(req: Request, res: Response, next: NextFunct
   }
 }
 
+export async function grantFinalQuizAttempt(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const assignment = await assignmentsService.grantFinalQuizAttempt(
+      requesterFrom(req),
+      req.params.assignmentId,
+      clientContext(req),
+    );
+    res.json({ success: true, data: { assignment } });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function deleteAssignment(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     await assignmentsService.deleteAssignment(requesterFrom(req), req.params.assignmentId, clientContext(req));

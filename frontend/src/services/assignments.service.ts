@@ -30,3 +30,10 @@ export async function deleteAssignmentApi(assignmentId: string): Promise<void> {
   const { data } = await apiClient.delete<ApiResponse<{ message: string }>>(`${BASE}/${assignmentId}`);
   unwrap(data, 'Failed to remove assignment');
 }
+
+export async function grantFinalQuizAttemptApi(assignmentId: string): Promise<Assignment> {
+  const { data } = await apiClient.post<ApiResponse<{ assignment: Assignment }>>(
+    `${BASE}/${assignmentId}/final-quiz/grant-attempt`,
+  );
+  return unwrap(data, 'Failed to grant another attempt').assignment;
+}

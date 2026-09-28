@@ -1,4 +1,4 @@
-export type NotificationCategory = 'course_published' | 'assignment_overdue' | 'custom';
+export type NotificationCategory = 'course_published' | 'assignment_overdue' | 'final_quiz_failed' | 'custom';
 
 export interface NotificationItem {
   id: string;

@@ -11,6 +11,7 @@ export interface AuthenticatedUserDTO {
   role: string;
   designation: string | null;
   mustChangePassword: boolean;
+  avatarUrl: string | null;
 }
 
 export interface ClientContext {

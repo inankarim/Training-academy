@@ -430,8 +430,14 @@ export const LessonPlayerPage: React.FC = () => {
       const lessons = course?.lessons ?? [];
       const idx = lessons.findIndex((l) => l.lessonId === lessonId);
       const next = idx >= 0 ? lessons[idx + 1] : undefined;
+      // Finishing the last remaining lesson of a course with a final quiz
+      // takes the learner straight into the quiz — it's what completes the course.
+      const everyLessonDone = lessons.every((l) => l.lessonId === lessonId || l.progressStatus === 'completed');
+      const quizPending = course?.finalQuiz && course.finalQuiz.status !== 'passed';
       if (next) {
         navigate(`/learner/lessons/${next.lessonId}`);
+      } else if (quizPending && everyLessonDone) {
+        navigate(`/learner/courses/${lesson!.courseId}/final-quiz`);
       } else {
         navigate(`/learner/courses/${lesson!.courseId}`);
       }

@@ -3,7 +3,7 @@ import { AssignmentRecord, AssignmentStatus, AssignmentFilters, CreateAssignment
 
 const ASSIGNMENT_SELECT = `
   SELECT id, course_id, assigned_to, assigned_by, due_date::text AS due_date, status,
-         assigned_at, completed_at, overdue_notified_at, created_at, updated_at
+         assigned_at, completed_at, overdue_notified_at, final_quiz_extra_attempts, created_at, updated_at
   FROM course_assignments
 `;
 
@@ -15,7 +15,7 @@ export async function insertAssignment(
     `INSERT INTO course_assignments (course_id, assigned_to, assigned_by, due_date)
      VALUES ($1, $2, $3, $4)
      RETURNING id, course_id, assigned_to, assigned_by, due_date::text AS due_date, status,
-               assigned_at, completed_at, overdue_notified_at, created_at, updated_at`,
+               assigned_at, completed_at, overdue_notified_at, final_quiz_extra_attempts, created_at, updated_at`,
     [input.courseId, input.userId, assignedBy, input.dueDate],
   );
   return rows[0];
@@ -72,6 +72,14 @@ export async function setAssignmentStatus(
   await getPool().query(
     'UPDATE course_assignments SET status = $1, completed_at = COALESCE($2, completed_at) WHERE id = $3',
     [status, completedAt ?? null, id],
+  );
+}
+
+/** HR grants one more final-quiz attempt after a fail. */
+export async function grantFinalQuizAttempt(id: string): Promise<void> {
+  await getPool().query(
+    'UPDATE course_assignments SET final_quiz_extra_attempts = final_quiz_extra_attempts + 1 WHERE id = $1',
+    [id],
   );
 }
 
