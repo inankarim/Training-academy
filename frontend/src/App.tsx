@@ -28,13 +28,15 @@ const CourseListPage = lazyImport(() => import('./pages/staff/CourseListPage'), 
 const CourseBuilderPage = lazyImport(() => import('./pages/staff/CourseBuilderPage'), 'CourseBuilderPage');
 const FinalQuizBuilderPage = lazyImport(() => import('./pages/staff/FinalQuizBuilderPage'), 'FinalQuizBuilderPage');
 const LessonBuilderPage = lazyImport(() => import('./pages/staff/LessonBuilderPage'), 'LessonBuilderPage');
-const AssignmentsPage = lazyImport(() => import('./pages/staff/AssignmentsPage'), 'AssignmentsPage');
+const AssignCoursePage = lazyImport(() => import('./pages/staff/AssignCoursePage'), 'AssignCoursePage');
+const AssignmentHistoryPage = lazyImport(() => import('./pages/staff/AssignmentHistoryPage'), 'AssignmentHistoryPage');
 
 const CoursesPage = lazyImport(() => import('./pages/learner/CoursesPage'), 'CoursesPage');
 const CourseOverviewPage = lazyImport(() => import('./pages/learner/CourseOverviewPage'), 'CourseOverviewPage');
 const FinalQuizPage = lazyImport(() => import('./pages/learner/FinalQuizPage'), 'FinalQuizPage');
 const LearnerProfilePage = lazyImport(() => import('./pages/learner/LearnerProfilePage'), 'LearnerProfilePage');
 const LessonPlayerPage = lazyImport(() => import('./pages/learner/LessonPlayerPage'), 'LessonPlayerPage');
+const HardcodedLessonPage = lazyImport(() => import('./pages/learner/HardcodedLessonPage'), 'HardcodedLessonPage');
 const NotificationsPage = lazyImport(() => import('./pages/shared/NotificationsPage'), 'NotificationsPage');
 
 function RouteFallback() {
@@ -142,7 +144,14 @@ export function App() {
             />
   
             {/* System Diagnostic Status */}
-            <Route path="/system-status" element={<SystemStatusPage />} />
+            <Route
+              path="/system-status"
+              element={
+                <ProtectedRoute allowedRoles={['super_admin']} redirectToLoginPath="/staff/login">
+                  <SystemStatusPage />
+                </ProtectedRoute>
+              }
+            />
   
             {/* Learner Platform Routes */}
             <Route
@@ -159,6 +168,7 @@ export function App() {
               <Route path="courses/:courseId" element={<CourseOverviewPage />} />
               <Route path="courses/:courseId/final-quiz" element={<FinalQuizPage />} />
               <Route path="lessons/:lessonId" element={<LessonPlayerPage />} />
+              <Route path="lessons/:lessonId/walkthrough" element={<HardcodedLessonPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="profile" element={<LearnerProfilePage />} />
             </Route>
@@ -233,7 +243,15 @@ export function App() {
                 path="assignments"
                 element={
                   <ProtectedRoute allowedRoles={['hr']} redirectToLoginPath="/staff/login">
-                    <AssignmentsPage />
+                    <AssignmentHistoryPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="assignments/new"
+                element={
+                  <ProtectedRoute allowedRoles={['hr']} redirectToLoginPath="/staff/login">
+                    <AssignCoursePage />
                   </ProtectedRoute>
                 }
               />

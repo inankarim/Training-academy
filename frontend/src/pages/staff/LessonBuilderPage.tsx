@@ -55,6 +55,15 @@ export const LessonBuilderPage: React.FC = () => {
     }
   }, [lesson]);
 
+  // Hardcoded lessons (e.g. One App Training) have no Mongo block content —
+  // there is nothing here for them to build. Bounce back to the course if
+  // this URL is reached directly rather than via the (already-disabled) UI.
+  useEffect(() => {
+    if (lesson && lesson.contentType === 'hardcoded' && courseId) {
+      navigate(`/staff/courses/${courseId}/edit`, { replace: true });
+    }
+  }, [lesson, courseId, navigate]);
+
   const handleAddBlock = async (type: string) => {
     if (!lessonId) return;
     try {

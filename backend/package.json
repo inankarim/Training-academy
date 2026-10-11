@@ -13,6 +13,7 @@
     "migrate:up": "ts-node src/database/migrate.ts up",
     "migrate:down": "ts-node src/database/migrate.ts down",
     "backfill:published-lessons": "ts-node src/database/backfillPublishedLessons.ts",
+    "seed:one-app-training": "ts-node src/database/seedOneAppTraining.ts",
     "seed": "ts-node src/database/seed.ts",
     "test": "jest"
   },

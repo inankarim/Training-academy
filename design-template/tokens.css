@@ -1,0 +1,159 @@
+/* ============================================================================
+   One App Training — Design Tokens (drop-in)
+   Tailwind v4 (@theme inline). Extracted verbatim from src/styles.css so the
+   next project renders pixel-identical.
+
+   Install:
+     1. Copy this file into the new project (e.g. src/styles/tokens.css)
+     2. In your main stylesheet:
+            @import "tailwindcss" source(none);
+            @source "../src";
+            @import "tw-animate-css";
+            @import "./styles/tokens.css";
+     3. Load Nunito 400;600;700;800;900 from Google Fonts in <head>.
+
+   For Tailwind v3, move the @theme block into tailwind.config.ts
+   theme.extend.colors / borderRadius / fontFamily, keeping the same
+   var(--token) references and the same :root block.
+   ========================================================================= */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* ---- radius scale: everything derives from --radius (1rem) ---- */
+  --radius-sm: calc(var(--radius) - 4px);   /* 12px */
+  --radius-md: calc(var(--radius) - 2px);   /* 14px */
+  --radius-lg: var(--radius);               /* 16px */
+  --radius-xl: calc(var(--radius) + 4px);   /* 20px */
+  --radius-2xl: calc(var(--radius) + 8px);  /* 24px */
+  --radius-3xl: calc(var(--radius) + 12px); /* 28px */
+
+  /* ---- shadcn surface tokens ---- */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ---- brand tokens: THE identity of this design ---- */
+  --color-navy: var(--navy);
+  --color-navy-foreground: var(--navy-foreground);
+  --color-teal: var(--teal);
+  --color-teal-foreground: var(--teal-foreground);
+  --color-mint: var(--mint);
+  --color-mint-foreground: var(--mint-foreground);
+  --color-soft-blue: var(--soft-blue);
+  --color-highlight: var(--highlight);
+
+  --font-display: "Nunito", "Segoe UI", system-ui, sans-serif;
+}
+
+:root {
+  --radius: 1rem;
+
+  --background: oklch(0.985 0.005 240);   /* near-white, faint blue cast */
+  --foreground: oklch(0.22 0.06 250);     /* deep navy ink */
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.06 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.06 250);
+
+  /* Navy — primary brand. Header bars, phone bezel, all headings. ~#12345a */
+  --primary: oklch(0.28 0.08 258);
+  --primary-foreground: oklch(0.99 0.005 240);
+  --navy: oklch(0.28 0.08 258);
+  --navy-foreground: oklch(0.99 0.005 240);
+
+  /* Teal — action colour. Primary CTAs, stat chips, inline values, icons. */
+  --teal: oklch(0.5 0.09 210);
+  --teal-foreground: oklch(0.99 0.005 240);
+
+  /* Mint — "good / achieved" tag colour. Focus-area pills, progress fill. */
+  --mint: oklch(0.72 0.17 155);
+  --mint-foreground: oklch(1 0 0);
+
+  /* Soft blue — tinted panel background. Every grouped card/section. */
+  --soft-blue: oklch(0.94 0.03 240);
+  /* Highlight — amber. Coach ring, pulse glow, hint strip. */
+  --highlight: oklch(0.92 0.15 90);
+
+  --secondary: oklch(0.94 0.02 250);
+  --secondary-foreground: oklch(0.28 0.08 258);
+  --muted: oklch(0.95 0.015 250);
+  --muted-foreground: oklch(0.5 0.04 250);
+  --accent: oklch(0.94 0.03 240);
+  --accent-foreground: oklch(0.28 0.08 258);
+  --destructive: oklch(0.62 0.22 25);
+  --destructive-foreground: oklch(0.99 0.005 240);
+  --border: oklch(0.9 0.02 250);
+  --input: oklch(0.9 0.02 250);
+  --ring: oklch(0.5 0.09 210);
+}
+
+/* Dark mode is declared but intentionally only partial in the source app —
+   the simulated phone screen is always light, because the real app it teaches
+   is light. Keep it that way unless you fully re-theme the phone screens. */
+.dark {
+  --background: oklch(0.16 0.03 250);
+  --foreground: oklch(0.98 0.005 240);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html, body {
+    font-family: var(--font-display);
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+/* ============================================================================
+   Coaching motion — the two animations the whole training UX hangs on.
+   ========================================================================= */
+
+/* Expanding amber halo on the one element the learner must touch next. */
+@keyframes trainer-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--highlight) 70%, transparent);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 14px color-mix(in oklab, var(--highlight) 0%, transparent);
+    transform: scale(1.03);
+  }
+}
+
+.pulse-target {
+  position: relative;
+  animation: trainer-pulse 1.4s ease-in-out infinite;
+  border-radius: 12px;
+  outline: 3px solid var(--highlight);
+  outline-offset: 2px;
+  z-index: 5;
+}
+
+/* Entrance for modals, toasts, pickers. */
+@keyframes pop-in {
+  0%   { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+.pop-in { animation: pop-in 0.25s ease-out; }

@@ -4,6 +4,7 @@ import {
   courseIdParamValidation,
   lessonIdParamValidation,
   blockIdParamValidation,
+  hotspotIdParamValidation,
   blockAttemptValidation,
 } from './learner.validation';
 import { validate } from '../../middleware/validate';
@@ -31,6 +32,19 @@ learnerRouter.post(
   controller.submitFinalQuizAttempt,
 );
 learnerRouter.get('/lessons/:lessonId', lessonIdParamValidation, validate, controller.getLesson);
+learnerRouter.get(
+  '/lessons/:lessonId/hotspots',
+  lessonIdParamValidation,
+  validate,
+  controller.getHardcodedLessonProgress,
+);
+learnerRouter.post(
+  '/lessons/:lessonId/hotspots/:hotspotId/explore',
+  lessonIdParamValidation,
+  hotspotIdParamValidation,
+  validate,
+  controller.exploreHotspot,
+);
 learnerRouter.post('/lessons/:lessonId/complete', lessonIdParamValidation, validate, controller.completeLesson);
 learnerRouter.post(
   '/lessons/:lessonId/blocks/:blockId/attempt',

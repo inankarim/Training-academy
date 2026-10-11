@@ -1,4 +1,5 @@
 export type LessonStatus = 'draft' | 'ready' | 'published';
+export type LessonContentType = 'blocks' | 'hardcoded';
 
 // --- Course Modules (Postgres `modules` table) ---
 
@@ -41,6 +42,10 @@ export interface LessonRecord {
   description: string | null;
   sort_order: number;
   status: LessonStatus;
+  /** Empty = visible to every sales role. Non-empty = only those roles see it. */
+  applicable_roles: string[];
+  content_type: LessonContentType;
+  hardcoded_key: string | null;
   created_by: string;
   created_at: Date;
   updated_at: Date;
@@ -55,6 +60,7 @@ export interface LessonSummaryDTO {
   sortOrder: number;
   status: LessonStatus;
   blockCount: number;
+  contentType: LessonContentType;
   createdAt: Date;
   updatedAt: Date;
 }

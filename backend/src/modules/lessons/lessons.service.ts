@@ -234,6 +234,7 @@ async function toLessonSummaryDTO(record: LessonRecord): Promise<LessonSummaryDT
     sortOrder: record.sort_order,
     status: record.status,
     blockCount: content?.blocks.length ?? 0,
+    contentType: record.content_type,
     createdAt: record.created_at,
     updatedAt: record.updated_at,
   };
@@ -299,6 +300,7 @@ export async function getLessonDetail(
     sortOrder: lesson.sort_order,
     status: lesson.status,
     blockCount: content?.blocks.length ?? 0,
+    contentType: lesson.content_type,
     createdAt: lesson.created_at,
     updatedAt: lesson.updated_at,
     blocks: content?.blocks.map((b) => b.toObject()) ?? [],

@@ -43,7 +43,7 @@ const DEFAULT_RETRY_POLICY: DefaultRetryPolicy = {
   scoreDecayPercent: 10,
 };
 
-async function assertAssignment(userId: string, courseId: string) {
+export async function assertAssignment(userId: string, courseId: string) {
   const assignment = await learnerRepo.findLatestAssignmentForLearnerCourse(userId, courseId);
   if (!assignment) {
     throw new AppError('This course has not been assigned to you.', 403);
@@ -54,14 +54,33 @@ async function assertAssignment(userId: string, courseId: string) {
   return assignment;
 }
 
+/** A learner's sales_role (SO/TSM/ASM/RSM/NON_SALES, or null) — decides which role-tagged lessons they can see. */
+export async function getSalesRole(userId: string): Promise<string | null> {
+  const user = await usersRepo.findUserById(userId);
+  return user?.sales_role ?? null;
+}
+
+/**
+ * Role-tagged lessons are invisible to every other role, not just hidden from
+ * the list — a learner can't open or complete one by guessing its id. Thrown
+ * as "not found" (never "forbidden") so the lesson's existence isn't leaked.
+ */
+export function assertLessonVisibleToRole(lesson: { applicable_roles: string[] }, salesRole: string | null): void {
+  const restricted = lesson.applicable_roles.length > 0;
+  if (restricted && (!salesRole || !lesson.applicable_roles.includes(salesRole))) {
+    throw new AppError('Lesson not found.', 404);
+  }
+}
+
 async function courseProgress(userId: string, courseId: string) {
   const assignment = await learnerRepo.findLatestAssignmentForLearnerCourse(userId, courseId);
   if (!assignment) return null;
-  const lessons = await lessonsRepo.findPublishedLessonsByCourse(courseId);
+  const salesRole = await getSalesRole(userId);
+  const lessons = await lessonsRepo.findPublishedLessonsVisibleToRole(courseId, salesRole);
   const completed = await learnerRepo.countCompletedLessons(assignment.id);
   const total = lessons.length;
   const quiz = await loadRequiredFinalQuiz(courseId);
-  const quizPassed = quiz ? (await getFinalQuizProgress(courseId, assignment)).status === 'passed' : false;
+  const quizPassed = quiz ? (await getFinalQuizProgress(courseId, assignment, salesRole)).status === 'passed' : false;
   return {
     assignment,
     lessonCount: total,
@@ -106,9 +125,10 @@ export async function getCourseForLearner(
   const course = await coursesRepo.findCourseById(courseId);
   if (!course) throw new AppError('Course not found.', 404);
 
+  const salesRole = await getSalesRole(requester.id);
   const [modules, lessons, progressRows] = await Promise.all([
     courseModulesRepo.findModulesByCourse(courseId),
-    lessonsRepo.findPublishedLessonsByCourse(courseId),
+    lessonsRepo.findPublishedLessonsVisibleToRole(courseId, salesRole),
     learnerRepo.listProgressForAssignment(assignment.id),
   ]);
 
@@ -118,7 +138,7 @@ export async function getCourseForLearner(
   const completedLessonCount = progressRows.filter(
     (p) => p.status === 'completed' && visibleLessonIds.has(p.lesson_id),
   ).length;
-  const finalQuiz = await finalQuizSummaryFor(courseId, assignment);
+  const finalQuiz = await finalQuizSummaryFor(courseId, assignment, salesRole);
 
   return {
     courseId: course.id,
@@ -141,6 +161,8 @@ export async function getCourseForLearner(
       moduleId: l.module_id,
       moduleTitle: moduleTitleById.get(l.module_id) ?? '',
       progressStatus: progressByLesson.get(l.id) ?? 'not_started',
+      contentType: l.content_type,
+      hardcodedKey: l.hardcoded_key,
     })),
     finalQuiz,
   };
@@ -152,10 +174,14 @@ export async function getCourseForLearner(
 
 type LearnerAssignment = NonNullable<Awaited<ReturnType<typeof learnerRepo.findLatestAssignmentForLearnerCourse>>>;
 
-async function finalQuizSummaryFor(courseId: string, assignment: LearnerAssignment): Promise<FinalQuizSummaryDTO | null> {
+async function finalQuizSummaryFor(
+  courseId: string,
+  assignment: LearnerAssignment,
+  salesRole: string | null,
+): Promise<FinalQuizSummaryDTO | null> {
   const quiz = await loadRequiredFinalQuiz(courseId);
   if (!quiz) return null;
-  const progress = await getFinalQuizProgress(courseId, assignment);
+  const progress = await getFinalQuizProgress(courseId, assignment, salesRole);
   return {
     quizName: quiz.quizName || 'Final Quiz',
     status: progress.status,
@@ -174,7 +200,8 @@ export async function getFinalQuizForLearner(requester: RequesterContext, course
   const quiz = await loadRequiredFinalQuiz(courseId);
   if (!course || !quiz) throw new AppError('This course has no final quiz.', 404);
 
-  const summary = (await finalQuizSummaryFor(courseId, assignment))!;
+  const salesRole = await getSalesRole(requester.id);
+  const summary = (await finalQuizSummaryFor(courseId, assignment, salesRole))!;
   return {
     ...summary,
     courseId,
@@ -201,7 +228,8 @@ export async function submitFinalQuizAttempt(
   const quiz = await loadRequiredFinalQuiz(courseId);
   if (!course || !quiz) throw new AppError('This course has no final quiz.', 404);
 
-  const progress = await getFinalQuizProgress(courseId, assignment);
+  const salesRole = await getSalesRole(requester.id);
+  const progress = await getFinalQuizProgress(courseId, assignment, salesRole);
   if (progress.status === 'locked') throw new AppError('Complete every lesson before taking the final quiz.', 400);
   if (progress.status === 'passed') throw new AppError('You have already passed this final quiz.', 400);
   if (progress.status === 'failed') {
@@ -305,6 +333,7 @@ export async function getLessonForLearner(
 ): Promise<LearnerLessonDetailDTO> {
   const lesson = await lessonsRepo.findLessonById(lessonId);
   if (!lesson || lesson.status !== 'published') throw new AppError('Lesson not found.', 404);
+  assertLessonVisibleToRole(lesson, await getSalesRole(requester.id));
 
   const assignment = await assertAssignment(requester.id, lesson.course_id);
 
@@ -363,6 +392,8 @@ export async function completeLesson(
 ): Promise<void> {
   const lesson = await lessonsRepo.findLessonById(lessonId);
   if (!lesson || lesson.status !== 'published') throw new AppError('Lesson not found.', 404);
+  const salesRole = await getSalesRole(requester.id);
+  assertLessonVisibleToRole(lesson, salesRole);
 
   const assignment = await assertAssignment(requester.id, lesson.course_id);
 
@@ -380,7 +411,7 @@ export async function completeLesson(
   });
 
   const [lessons, completedCount] = await Promise.all([
-    lessonsRepo.findPublishedLessonsByCourse(lesson.course_id),
+    lessonsRepo.findPublishedLessonsVisibleToRole(lesson.course_id, salesRole),
     learnerRepo.countCompletedLessons(assignment.id),
   ]);
 
@@ -418,6 +449,7 @@ export async function submitBlockAttempt(
 ): Promise<BlockAttemptResultDTO> {
   const lesson = await lessonsRepo.findLessonById(lessonId);
   if (!lesson || lesson.status !== 'published') throw new AppError('Lesson not found.', 404);
+  assertLessonVisibleToRole(lesson, await getSalesRole(requester.id));
   await assertAssignment(requester.id, lesson.course_id);
 
   const content = await lessonsMongoRepo.findLessonContentByLessonId(lessonId);

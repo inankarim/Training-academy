@@ -50,10 +50,11 @@ export interface FinalQuizProgress {
 export async function getFinalQuizProgress(
   courseId: string,
   assignment: { id: string; final_quiz_extra_attempts: number },
+  salesRole: string | null,
 ): Promise<FinalQuizProgress> {
   const [attempts, lessons, completedLessons] = await Promise.all([
     learnerMongoRepo.listFinalQuizAttempts(assignment.id),
-    lessonsRepo.findPublishedLessonsByCourse(courseId),
+    lessonsRepo.findPublishedLessonsVisibleToRole(courseId, salesRole),
     learnerRepo.countCompletedLessons(assignment.id),
   ]);
 

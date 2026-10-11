@@ -6,6 +6,7 @@ export interface Assignment {
   courseName: string;
   assignedTo: string;
   assignedToName: string;
+  assignedToSalesRole: string | null;
   assignedBy: string;
   dueDate: string;
   status: AssignmentStatus;

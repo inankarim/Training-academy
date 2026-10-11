@@ -21,6 +21,18 @@ export interface LearnerLessonSummary {
   moduleId: string;
   moduleTitle: string;
   progressStatus: 'not_started' | 'in_progress' | 'completed';
+  contentType: 'blocks' | 'hardcoded';
+  hardcodedKey: string | null;
+}
+
+export interface HardcodedLessonProgress {
+  lessonId: string;
+  courseId: string;
+  title: string;
+  hardcodedKey: string;
+  totalHotspots: number;
+  exploredHotspotIds: string[];
+  lessonCompleted: boolean;
 }
 
 export interface LearnerCourseDetail extends LearnerCourseSummary {

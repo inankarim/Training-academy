@@ -2,7 +2,8 @@ import { getPool } from '../../database/postgres';
 import { LessonRecord, CreateLessonInput, UpdateLessonInput, LessonStatus } from './lessons.types';
 
 const LESSON_SELECT = `
-  SELECT id, course_id, module_id, title, description, sort_order, status, created_by, created_at, updated_at
+  SELECT id, course_id, module_id, title, description, sort_order, status,
+         applicable_roles, content_type, hardcoded_key, created_by, created_at, updated_at
   FROM lessons
 `;
 
@@ -49,6 +50,24 @@ export async function findPublishedLessonsByCourse(courseId: string): Promise<Le
   const { rows } = await getPool().query<LessonRecord>(
     `${LESSON_SELECT} WHERE course_id = $1 AND status = 'published' ORDER BY sort_order ASC`,
     [courseId],
+  );
+  return rows;
+}
+
+/**
+ * Published lessons a specific learner can see: untagged lessons (visible to
+ * everyone) plus any tagged for their own sales role. Two learners with
+ * different roles can see a different lesson count for the same course —
+ * intentional (e.g. a TSM sees "TSM Dashboard" + "SO Management", an SO
+ * sees "SO Dashboard" only, neither sees the other's role-only lessons).
+ */
+export async function findPublishedLessonsVisibleToRole(courseId: string, salesRole: string | null): Promise<LessonRecord[]> {
+  const { rows } = await getPool().query<LessonRecord>(
+    `${LESSON_SELECT}
+     WHERE course_id = $1 AND status = 'published'
+       AND (applicable_roles = '{}' OR $2 = ANY(applicable_roles))
+     ORDER BY sort_order ASC`,
+    [courseId, salesRole],
   );
   return rows;
 }

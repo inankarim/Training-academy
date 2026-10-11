@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { getLearnerCourseApi } from '../../services/learner.service';
-import { ChevronLeft, CheckCircle2, PlayCircle, Circle, Clock, Zap, Trophy, Lock, ClipboardCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, PlayCircle, Clock, Zap, Trophy, Lock, ClipboardCheck, BookOpen } from 'lucide-react';
 import clsx from 'clsx';
 
 export const CourseOverviewPage: React.FC = () => {
@@ -48,68 +48,128 @@ export const CourseOverviewPage: React.FC = () => {
   });
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_260px]">
-      <div className="space-y-5">
-        <div>
-          <Link
-            to="/learner/courses"
-            className="flex items-center gap-1 text-xs font-medium text-ink-muted hover:text-ink"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" /> Back to My Courses
-          </Link>
-          <h1 className="mt-2 text-xl font-bold tracking-tight text-ink">{course.name}</h1>
-          {course.description && <p className="mt-1 text-xs text-ink-muted">{course.description}</p>}
-          <div className="mt-3 flex items-center gap-4 text-xs text-ink-muted">
-            <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" /> {course.estimatedDuration}h
-            </span>
-            <span className="flex items-center gap-1 font-semibold text-accent">
-              <Zap className="h-3.5 w-3.5" /> {course.totalXpReward} XP
-            </span>
-            <span className="capitalize">{course.difficulty}</span>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
+      <div className="min-w-0 space-y-5">
+        <Link
+          to="/learner/courses"
+          className="flex items-center gap-1 text-xs font-medium text-ink-muted hover:text-ink"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" /> Back to My Courses
+        </Link>
+
+        {/* Course hero: banner, title, full description */}
+        <div className="overflow-hidden rounded-xl border border-surface-border bg-surface-card shadow-card">
+          <div className="relative aspect-[3/1] min-h-[160px] w-full bg-charcoal">
+            {course.bannerRef ? (
+              <img src={course.bannerRef} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-br from-charcoal-soft to-charcoal" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/30 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+              <span className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-semibold capitalize text-white backdrop-blur">
+                {course.difficulty}
+              </span>
+              <h1 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">{course.name}</h1>
+            </div>
+          </div>
+          <div className="p-5 sm:p-6">
+            {course.description && (
+              <p className="whitespace-pre-line text-sm leading-relaxed text-ink-muted sm:text-base">
+                {course.description}
+              </p>
+            )}
+            <div
+              className={clsx(
+                'flex flex-wrap items-center gap-2 text-xs font-medium text-ink-muted',
+                course.description && 'mt-4 border-t border-surface-border pt-4',
+              )}
+            >
+              <span className="flex items-center gap-1.5 rounded-full bg-surface px-3 py-1">
+                <Clock className="h-3.5 w-3.5" /> {course.estimatedDuration}h
+              </span>
+              <span className="flex items-center gap-1.5 rounded-full bg-surface px-3 py-1">
+                <BookOpen className="h-3.5 w-3.5" /> {course.lessonCount} lesson{course.lessonCount === 1 ? '' : 's'}
+              </span>
+              <span className="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 font-semibold text-accent">
+                <Zap className="h-3.5 w-3.5" /> {course.totalXpReward} XP
+              </span>
+              {course.finalQuiz && (
+                <span className="flex items-center gap-1.5 rounded-full bg-surface px-3 py-1">
+                  <ClipboardCheck className="h-3.5 w-3.5" /> Final quiz
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
+        {/* Course content */}
         <div className="space-y-4">
+          <h2 className="text-sm font-bold text-ink">Course Content</h2>
           {moduleOrder.map((moduleId) => {
             const lessons = byModule.get(moduleId)!;
+            const doneInModule = lessons.filter((l) => l.progressStatus === 'completed').length;
             return (
-              <div key={moduleId} className="rounded-lg border border-surface-border bg-surface-card shadow-card">
-                <div className="border-b border-surface-border px-4 py-3">
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
+              <div key={moduleId} className="overflow-hidden rounded-xl border border-surface-border bg-surface-card shadow-card">
+                <div className="flex items-center justify-between border-b border-surface-border bg-surface/60 px-5 py-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-ink-muted">
                     {lessons[0]?.moduleTitle || 'Module'}
-                  </h2>
+                  </h3>
+                  <span className="text-[11px] font-medium text-ink-faint">
+                    {doneInModule}/{lessons.length} done
+                  </span>
                 </div>
                 <ul>
-                  {lessons.map((l) => {
+                  {lessons.map((l, index) => {
                     const isDone = l.progressStatus === 'completed';
                     const isCurrent = l.progressStatus === 'in_progress';
                     return (
                       <li key={l.lessonId} className="border-b border-surface-border last:border-0">
                         <button
-                          onClick={() => navigate(`/learner/lessons/${l.lessonId}`)}
-                          className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-surface/60"
+                          onClick={() =>
+                            navigate(
+                              l.contentType === 'hardcoded'
+                                ? `/learner/lessons/${l.lessonId}/walkthrough`
+                                : `/learner/lessons/${l.lessonId}`,
+                            )
+                          }
+                          className="group flex w-full items-start gap-4 px-5 py-4 text-left transition hover:bg-surface/60"
                         >
-                          {isDone ? (
-                            <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-status-success" />
-                          ) : isCurrent ? (
-                            <PlayCircle className="h-4.5 w-4.5 shrink-0 text-accent" />
-                          ) : (
-                            <Circle className="h-4.5 w-4.5 shrink-0 text-ink-faint" />
-                          )}
+                          <span
+                            className={clsx(
+                              'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold',
+                              isDone && 'bg-status-successSubtle text-status-success',
+                              isCurrent && 'bg-accent text-white',
+                              !isDone && !isCurrent && 'bg-surface text-ink-muted',
+                            )}
+                          >
+                            {isDone ? (
+                              <CheckCircle2 className="h-4 w-4" />
+                            ) : isCurrent ? (
+                              <PlayCircle className="h-4 w-4" />
+                            ) : (
+                              index + 1
+                            )}
+                          </span>
                           <div className="min-w-0 flex-1">
-                            <p
-                              className={clsx(
-                                'truncate text-xs font-semibold',
-                                isCurrent ? 'text-accent' : 'text-ink',
-                              )}
-                            >
+                            <p className={clsx('text-sm font-semibold', isCurrent ? 'text-accent' : 'text-ink')}>
                               {l.title}
                             </p>
                             {l.description && (
-                              <p className="truncate text-[11px] text-ink-faint">{l.description}</p>
+                              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-muted">{l.description}</p>
                             )}
                           </div>
+                          <span
+                            className={clsx(
+                              'mt-1 hidden shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold sm:inline-block',
+                              isDone && 'bg-status-successSubtle text-status-success',
+                              isCurrent && 'bg-accent/10 text-accent',
+                              !isDone && !isCurrent && 'bg-surface text-ink-muted',
+                            )}
+                          >
+                            {isDone ? 'Completed' : isCurrent ? 'In progress' : 'Start'}
+                          </span>
+                          <ChevronRight className="mt-1.5 h-4 w-4 shrink-0 text-ink-faint transition group-hover:translate-x-0.5 group-hover:text-accent" />
                         </button>
                       </li>
                     );
@@ -176,7 +236,7 @@ export const CourseOverviewPage: React.FC = () => {
       </div>
 
       {/* Right sidebar: course progress */}
-      <div className="space-y-4">
+      <div className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
         <div className="rounded-lg border border-surface-border bg-surface-card p-4 shadow-card">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-faint">Course Progress</p>
           <div className="mt-2">

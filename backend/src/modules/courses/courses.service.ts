@@ -241,6 +241,10 @@ async function assertLessonsReadyForPublish(courseId: string): Promise<void> {
 
   const missing: string[] = [];
   for (const lesson of lessons) {
+    // Hardcoded lessons (e.g. an interactive app-screen walkthrough) have no
+    // Lesson Builder blocks at all — their completion rule lives in code
+    // (every hotspot explored), not in a graded check block.
+    if (lesson.content_type === 'hardcoded') continue;
     const content = await findLessonContentByLessonId(lesson.id);
     const liveBlocks = content?.publishedBlocks.map((b) => b.toObject()) ?? [];
     if (!lessonHasGradedCheck(liveBlocks)) {

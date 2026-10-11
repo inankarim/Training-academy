@@ -10,6 +10,7 @@ import {
   LearnerFinalQuiz,
   FinalQuizAttemptResult,
   LearnerProfile,
+  HardcodedLessonProgress,
 } from '../types/learner.types';
 
 const BASE = '/learner';
@@ -84,4 +85,16 @@ export async function uploadProfilePhotoApi(file: File): Promise<string> {
   form.append('file', file);
   const { data } = await apiClient.post<ApiResponse<{ avatarUrl: string }>>(`${BASE}/profile/photo`, form);
   return unwrap(data, 'Failed to upload photo').avatarUrl;
+}
+
+export async function getHardcodedLessonProgressApi(lessonId: string): Promise<HardcodedLessonProgress> {
+  const { data } = await apiClient.get<ApiResponse<{ progress: HardcodedLessonProgress }>>(`${BASE}/lessons/${lessonId}/hotspots`);
+  return unwrap(data, 'Failed to load lesson').progress;
+}
+
+export async function exploreHotspotApi(lessonId: string, hotspotId: string): Promise<HardcodedLessonProgress> {
+  const { data } = await apiClient.post<ApiResponse<{ progress: HardcodedLessonProgress }>>(
+    `${BASE}/lessons/${lessonId}/hotspots/${hotspotId}/explore`,
+  );
+  return unwrap(data, 'Failed to record progress').progress;
 }

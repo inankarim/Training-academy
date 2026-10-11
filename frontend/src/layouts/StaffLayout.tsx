@@ -12,6 +12,7 @@ import {
   Shield,
   BookOpen,
   ClipboardList,
+  Rocket,
   Bell,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -94,20 +95,37 @@ export const StaffLayout: React.FC = () => {
           )}
 
           {isHr && (
-            <NavLink
-              to="/staff/assignments"
-              className={({ isActive }) =>
-                clsx(
-                  'flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition',
-                  isActive
-                    ? 'bg-charcoal-soft font-semibold text-white shadow-sm'
-                    : 'text-white/70 hover:bg-charcoal-soft/50 hover:text-white',
-                )
-              }
-            >
-              <ClipboardList className="h-4 w-4 text-accent" />
-              Assignments
-            </NavLink>
+            <>
+              <NavLink
+                to="/staff/assignments/new"
+                className={({ isActive }) =>
+                  clsx(
+                    'flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition',
+                    isActive
+                      ? 'bg-charcoal-soft font-semibold text-white shadow-sm'
+                      : 'text-white/70 hover:bg-charcoal-soft/50 hover:text-white',
+                  )
+                }
+              >
+                <Rocket className="h-4 w-4 text-accent" />
+                Assign Course
+              </NavLink>
+              <NavLink
+                to="/staff/assignments"
+                end
+                className={({ isActive }) =>
+                  clsx(
+                    'flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition',
+                    isActive
+                      ? 'bg-charcoal-soft font-semibold text-white shadow-sm'
+                      : 'text-white/70 hover:bg-charcoal-soft/50 hover:text-white',
+                  )
+                }
+              >
+                <ClipboardList className="h-4 w-4 text-accent" />
+                Assignment History
+              </NavLink>
+            </>
           )}
 
           {canViewUsers && (
@@ -162,20 +180,22 @@ export const StaffLayout: React.FC = () => {
             </NavLink>
           )}
 
-          <NavLink
-            to="/system-status"
-            className={({ isActive }) =>
-              clsx(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition',
-                isActive
-                  ? 'bg-charcoal-soft font-semibold text-white shadow-sm'
-                  : 'text-white/70 hover:bg-charcoal-soft/50 hover:text-white',
-              )
-            }
-          >
-            <Activity className="h-4 w-4 text-white/40" />
-            System Status
-          </NavLink>
+          {user?.role === 'super_admin' && (
+            <NavLink
+              to="/system-status"
+              className={({ isActive }) =>
+                clsx(
+                  'flex items-center gap-3 rounded-md px-3 py-2 text-xs font-medium transition',
+                  isActive
+                    ? 'bg-charcoal-soft font-semibold text-white shadow-sm'
+                    : 'text-white/70 hover:bg-charcoal-soft/50 hover:text-white',
+                )
+              }
+            >
+              <Activity className="h-4 w-4 text-white/40" />
+              System Status
+            </NavLink>
+          )}
         </nav>
 
         {/* Bottom logout area */}

@@ -26,6 +26,9 @@ export interface LearnerLessonSummaryDTO {
   moduleId: string;
   moduleTitle: string;
   progressStatus: 'not_started' | 'in_progress' | 'completed';
+  contentType: 'blocks' | 'hardcoded';
+  /** Set only when contentType is 'hardcoded' — tells the frontend which component to render. */
+  hardcodedKey: string | null;
 }
 
 export interface LearnerCourseDetailDTO extends LearnerCourseSummaryDTO {
@@ -156,4 +159,14 @@ export interface LearnerProfileDTO {
     xpEarned: number;
     finalQuizScore: number | null;
   }>;
+}
+
+export interface HardcodedLessonProgressDTO {
+  lessonId: string;
+  courseId: string;
+  title: string;
+  hardcodedKey: string;
+  totalHotspots: number;
+  exploredHotspotIds: string[];
+  lessonCompleted: boolean;
 }

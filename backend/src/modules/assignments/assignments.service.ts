@@ -16,7 +16,9 @@ async function toDTO(record: AssignmentRecord): Promise<AssignmentDTO> {
     usersRepo.findUserById(record.assigned_to),
     loadRequiredFinalQuiz(record.course_id),
   ]);
-  const finalQuiz = quiz ? await getFinalQuizProgress(record.course_id, record) : null;
+  const finalQuiz = quiz
+    ? await getFinalQuizProgress(record.course_id, record, user?.sales_role ?? null)
+    : null;
 
   return {
     id: record.id,
@@ -24,6 +26,7 @@ async function toDTO(record: AssignmentRecord): Promise<AssignmentDTO> {
     courseName: course?.name ?? 'Unknown course',
     assignedTo: record.assigned_to,
     assignedToName: user?.full_name ?? 'Unknown user',
+    assignedToSalesRole: user?.sales_role ?? null,
     assignedBy: record.assigned_by,
     dueDate: record.due_date,
     status: record.status,
@@ -45,7 +48,8 @@ export async function grantFinalQuizAttempt(
   const quiz = await loadRequiredFinalQuiz(record.course_id);
   if (!quiz) throw new AppError('This course has no final quiz.', 400);
 
-  const progress = await getFinalQuizProgress(record.course_id, record);
+  const assignedUser = await usersRepo.findUserById(record.assigned_to);
+  const progress = await getFinalQuizProgress(record.course_id, record, assignedUser?.sales_role ?? null);
   if (progress.status !== 'failed') {
     throw new AppError('Another attempt can only be granted after the learner has failed the final quiz.', 400);
   }

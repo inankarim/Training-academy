@@ -5,6 +5,9 @@ export const lessonIdParamValidation = [param('lessonId').isUUID().withMessage('
 export const blockIdParamValidation = [
   param('blockId').isString().trim().notEmpty().withMessage('A valid block ID is required.'),
 ];
+export const hotspotIdParamValidation = [
+  param('hotspotId').isString().trim().notEmpty().withMessage('A valid hotspot ID is required.'),
+];
 
 export const blockAttemptValidation = [
   body('answers').isArray({ min: 1 }).withMessage('answers must be a non-empty array.'),

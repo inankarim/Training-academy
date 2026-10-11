@@ -56,6 +56,7 @@ export interface LessonSummary {
   sortOrder: number;
   status: LessonStatus;
   blockCount: number;
+  contentType: 'blocks' | 'hardcoded';
   createdAt: string;
   updatedAt: string;
 }

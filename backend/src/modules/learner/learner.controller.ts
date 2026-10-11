@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as learnerService from './learner.service';
 import * as learnerProfileService from './learnerProfile.service';
+import * as hardcodedLessonService from './hardcodedLesson.service';
 import { uploadAvatar } from '../../middleware/upload';
 import { AppError } from '../../middleware/errorHandler';
 import { RequesterContext } from './learner.types';
@@ -128,4 +129,27 @@ export function uploadProfilePhoto(req: Request, res: Response, next: NextFuncti
       next(serviceErr);
     }
   });
+}
+
+export async function getHardcodedLessonProgress(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const progress = await hardcodedLessonService.getHardcodedLessonProgress(requesterFrom(req), req.params.lessonId);
+    res.json({ success: true, data: { progress } });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function exploreHotspot(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const progress = await hardcodedLessonService.exploreHotspot(
+      requesterFrom(req),
+      req.params.lessonId,
+      req.params.hotspotId,
+      clientContext(req),
+    );
+    res.json({ success: true, data: { progress } });
+  } catch (err) {
+    next(err);
+  }
 }

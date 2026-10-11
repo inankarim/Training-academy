@@ -85,3 +85,16 @@ html.dark {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* One App lesson screens — native-app style transitions */
+@keyframes oa-push { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes oa-pop { from { transform: translateX(-30%); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }
+@keyframes oa-drop { from { transform: translateY(-6px) scaleY(0.9); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes oa-toast { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+.oa-push { animation: oa-push 260ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.oa-pop { animation: oa-pop 220ms ease-out; }
+.oa-drop { animation: oa-drop 140ms ease-out; transform-origin: top; }
+.oa-toast { animation: oa-toast 200ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .oa-push, .oa-pop, .oa-drop, .oa-toast { animation: none; }
+}

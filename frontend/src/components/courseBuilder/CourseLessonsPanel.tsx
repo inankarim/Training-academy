@@ -10,7 +10,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Pencil, Trash2, Plus, X, Check } from 'lucide-react';
+import { GripVertical, Pencil, Trash2, Plus, X, Check, Lock } from 'lucide-react';
 import { LessonSummary } from '../../types/courseBuilder.types';
 
 interface CourseLessonsPanelProps {
@@ -79,6 +79,24 @@ function SortableLessonRow({
             <X className="h-4 w-4" />
           </button>
         </>
+      ) : lesson.contentType === 'hardcoded' ? (
+        <>
+          <span
+            className="flex-1 truncate text-left text-xs font-medium text-ink-faint"
+            title="This lesson's screen is hand-built in code, not editable from the Lesson Builder."
+          >
+            {lesson.title}
+          </span>
+          <span className="flex items-center gap-1 text-[10px] font-semibold text-ink-faint">
+            <Lock className="h-3 w-3" /> Hardcoded
+          </span>
+          <button onClick={() => setEditing(true)} className="text-ink-faint hover:text-accent" title="Rename">
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+          <button onClick={onDelete} className="text-ink-faint hover:text-status-danger" title="Delete lesson">
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </>
       ) : (
         <>
           <button onClick={onOpen} className="flex-1 truncate text-left text-xs font-medium text-ink hover:text-accent">
@@ -132,6 +150,13 @@ export const CourseLessonsPanel: React.FC<CourseLessonsPanelProps> = ({
     );
   }
 
+  // A course built from hardcoded (hand-coded screen replica) lessons, like
+  // One App Training, can't grow new lessons through this generic panel —
+  // a new one needs its own React component + registry entry, which only a
+  // developer can add. Block "Add Lesson" here rather than letting staff
+  // create a stray 'blocks' lesson this course's flow was never meant for.
+  const hasHardcodedLessons = localLessons.some((l) => l.contentType === 'hardcoded');
+
   return (
     <div className="space-y-2">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -149,7 +174,11 @@ export const CourseLessonsPanel: React.FC<CourseLessonsPanelProps> = ({
         </SortableContext>
       </DndContext>
 
-      {adding ? (
+      {hasHardcodedLessons ? (
+        <p className="rounded-md border border-dashed border-surface-border bg-surface p-3 text-center text-[11px] text-ink-faint">
+          This course's lessons are hand-built screens. New ones are added in code, not here.
+        </p>
+      ) : adding ? (
         <div className="flex items-center gap-2 rounded-md border border-accent bg-surface-card px-3 py-2.5">
           <input
             autoFocus
